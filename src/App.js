@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from './pages/login.jsx';
+import AuthForm from './pages/login.jsx';
+import TeacherDashboard from './pages/TeacherDashboard.jsx';
+import StudentDashboard from './pages/StudentDashboard.jsx';
+import AvailableCourses from './pages/AvailableCourses.jsx';
 import { useState, useEffect } from 'react';
 
 function App() {
@@ -16,7 +19,11 @@ function App() {
     <Router>
       <Routes>
         {/* ✅ Pass csrfToken as a prop */}
-        <Route path="/" element={<Login csrfToken={csrfToken} />} />
+        <Route path="/" element={<AuthForm csrfToken={csrfToken} />} />
+        <Route path="/teacher/dashboard" element={<TeacherDashboard csrfToken={csrfToken} />} />
+        <Route path="/student/dashboard" element={<StudentDashboard csrfToken={csrfToken} />} />
+        <Route path="/student/available-courses" element={<AvailableCourses csrfToken={csrfToken} />} />
+
       </Routes>
     </Router>
   );

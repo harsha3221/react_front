@@ -1,0 +1,261 @@
+/* teacher-dashboard.css */
+
+/* Variables for easy theme adjustments */
+:root {
+  --primary-color: #007bff; /* Blue */
+  --secondary-color: #6c757d; /* Gray */
+  --background-color: #e9eff4; /* Lighter Blue-Gray Background */
+  --card-background: #ffffff; /* White */
+  --text-color: #343a40; /* Dark Gray */
+  --error-color: #dc3545; /* Red */
+  --border-radius: 12px; /* Slightly larger for modern feel */
+  --shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* Softer, deeper shadow */
+  --transition: all 0.3s ease;
+}
+
+/* Base Styles for the entire page body (recommended to set in a global CSS or index.css) */
+/* Setting background and font on the body ensures the dashboard fills the viewport */
+body {
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Teacher Dashboard (Main Container - NOW FULL WIDTH) */
+.teacher-dashboard {
+  /* Remove max-width and center margin to allow spreading */
+  width: 95%; /* Use a large percentage for full feel, but leave a small margin */
+  margin: 0 auto; /* Keep centered horizontally */
+  padding: 30px;
+  background-color: transparent; /* Let the body background show through */
+  color: var(--text-color);
+  box-sizing: border-box; /* Include padding in the element's total width and height */
+}
+
+h1 {
+  text-align: left; /* Align to the start for a modern layout */
+  color: var(--text-color);
+  margin-bottom: 5px;
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+
+h2 {
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-weight: 500;
+  font-size: 1.5rem;
+}
+
+p.error {
+  background-color: #f8d7da;
+  color: var(--error-color);
+  padding: 12px 20px;
+  border-left: 5px solid var(--error-color);
+  border-radius: 4px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+/* Dashboard Header (Title + Button) */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.dashboard-header h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Buttons (Modernized) */
+.create-btn, .submit-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.create-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.create-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+}
+
+.submit-btn {
+  background-color: #28a745;
+  color: white;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.submit-btn:hover {
+  background-color: #1e7e34;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Create Subject Form (Enhanced Grid Layout) */
+.create-subject-form {
+  background-color: var(--card-background);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Four equal columns */
+  gap: 20px;
+}
+
+.create-subject-form input,
+.create-subject-form textarea {
+  padding: 15px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.create-subject-form input:focus,
+.create-subject-form textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.create-subject-form textarea {
+  grid-column: 1 / -1; /* Span all columns for description */
+  resize: vertical;
+  min-height: 120px;
+}
+
+.create-subject-form .submit-btn {
+    grid-column: 4 / 5; /* Place button under the last input */
+    align-self: end; /* Align button to the bottom of its grid area */
+    margin: 0; /* Override default margin */
+}
+
+/* Subjects List (The Scrollable Area - Full Width Grid) */
+.subjects-list {
+  display: grid;
+  /* Auto-fit columns for responsive card display */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
+  padding: 30px 10px 30px 30px; /* Padding for scrollbar visibility */
+  /* Make the container look like a content section */
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  
+  /* Key for scrolling: Set max-height and overflow */
+  max-height: 65vh; 
+  overflow-y: auto; 
+}
+
+/* Custom Scrollbar for a modern touch */
+.subjects-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.subjects-list::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+}
+
+.subjects-list::-webkit-scrollbar-track {
+  background-color: #f1f3f5;
+  border-radius: 10px;
+}
+
+/* Subject Card */
+.subject-card {
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: var(--transition);
+  border-left: 8px solid var(--primary-color);
+  background-color: #f9fbfd; /* Slightly off-white for contrast */
+}
+
+.subject-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.subject-card h4 {
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.subject-card p {
+  margin: 5px 0;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.subject-card p strong {
+  font-weight: 700;
+  color: var(--secondary-color);
+  display: inline-block;
+  min-width: 90px;
+}
+
+/* Responsiveness */
+@media (max-width: 1024px) {
+    .create-subject-form {
+        grid-template-columns: repeat(2, 1fr); /* Two columns on tablets */
+    }
+    .create-subject-form .submit-btn {
+        grid-column: 2 / 3;
+    }
+}
+
+@media (max-width: 768px) {
+  .teacher-dashboard {
+    width: 100%;
+    padding: 20px 15px;
+  }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dashboard-header h3 {
+    margin-bottom: 15px;
+  }
+  .create-subject-form {
+    grid-template-columns: 1fr; /* Single column on phones */
+    padding: 20px;
+  }
+  .create-subject-form .submit-btn {
+      grid-column: 1 / -1;
+      margin-top: 20px;
+  }
+  .subjects-list {
+    grid-template-columns: 1fr; /* Single column layout for subjects */
+    padding: 20px;
+    max-height: 70vh;
+  }
+}
