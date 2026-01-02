@@ -1,5 +1,5 @@
 // src/pages/QuizQuestions.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import "../css/quiz-questions.css";
 
@@ -24,13 +24,13 @@ export default function QuizQuestions({ csrfToken }) {
   const [editQuestionId, setEditQuestionId] = useState(null);
 
   /* ------------------------------------------------------ */
-  /* Fetch Questions                                         */
+  /* Fetch Questions (FIXED with useCallback)               */
   /* ------------------------------------------------------ */
-  const fetchQuestions = () => {
+  const fetchQuestions = useCallback(() => {
+    setLoading(true);
+
     fetch(`http://localhost:3000/quiz/${quizId}/questions`, {
-      method: "GET",
       credentials: "include",
-      headers: { "CSRF-Token": csrfToken },
     })
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch questions");
@@ -44,14 +44,14 @@ export default function QuizQuestions({ csrfToken }) {
         setError(err.message);
         setLoading(false);
       });
-  };
+  }, [quizId]);
 
   useEffect(() => {
     fetchQuestions();
-  }, [quizId, csrfToken]);
+  }, [fetchQuestions]);
 
   /* ------------------------------------------------------ */
-  /* Start editing an existing question                      */
+  /* Start editing an existing question                     */
   /* ------------------------------------------------------ */
   const startEditing = (q) => {
     setEditMode(true);
@@ -72,7 +72,7 @@ export default function QuizQuestions({ csrfToken }) {
   };
 
   /* ------------------------------------------------------ */
-  /* Reset form state                                        */
+  /* Reset form state                                       */
   /* ------------------------------------------------------ */
   const resetForm = () => {
     setQuestionText("");
@@ -87,14 +87,14 @@ export default function QuizQuestions({ csrfToken }) {
   };
 
   /* ------------------------------------------------------ */
-  /* Add option                                              */
+  /* Add option                                             */
   /* ------------------------------------------------------ */
   const addOption = () => {
     setOptions([...options, { option_text: "", is_correct: false }]);
   };
 
   /* ------------------------------------------------------ */
-  /* Submit form: Create OR Update                           */
+  /* Submit form: Create OR Update                          */
   /* ------------------------------------------------------ */
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -133,7 +133,7 @@ export default function QuizQuestions({ csrfToken }) {
   };
 
   /* ------------------------------------------------------ */
-  /* Delete question                                         */
+  /* Delete question                                        */
   /* ------------------------------------------------------ */
   const handleDeleteQuestion = (questionId) => {
     if (!window.confirm("Are you sure?")) return;
@@ -157,7 +157,7 @@ export default function QuizQuestions({ csrfToken }) {
   };
 
   /* ------------------------------------------------------ */
-  /* RENDER SECTION                                          */
+  /* RENDER SECTION                                         */
   /* ------------------------------------------------------ */
 
   if (loading) return <h2>Loading questions...</h2>;

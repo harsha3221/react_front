@@ -42,7 +42,7 @@ const initialFormData = {
   year: "",
 };
 
-export default function AuthForm({ csrfToken }) {
+export default function AuthForm({ setCsrfToken }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState("");
@@ -64,6 +64,15 @@ export default function AuthForm({ csrfToken }) {
     setError("");
     setFormData(initialFormData);
     setIsLogin(!isLogin);
+  };
+
+  // ✅ FETCH CSRF TOKEN AFTER LOGIN (logic only, no JSX touched)
+  const fetchCsrfToken = async () => {
+    const res = await fetch("http://localhost:3000/csrf-token", {
+      credentials: "include",
+    });
+    const data = await res.json();
+    setCsrfToken(data.csrfToken);
   };
 
   const handleSubmit = async (e) => {
@@ -91,8 +100,7 @@ export default function AuthForm({ csrfToken }) {
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "CSRF-Token": csrfToken, // this can be removed
+          "Content-Type": "application/json", // ✅ CSRF REMOVED FROM LOGIN
         },
         body: JSON.stringify(formData),
         credentials: "include",
@@ -111,11 +119,14 @@ export default function AuthForm({ csrfToken }) {
         setError("Registration successful! Please log in.");
         setTimeout(() => handleToggle(), 1500);
       } else {
+        // ✅ IMPORTANT: fetch CSRF AFTER login
+        await fetchCsrfToken();
+
         // ✅ Redirect using navigate based on role
         if (data.role === "teacher") {
           navigate("/teacher/dashboard");
         } else if (data.role === "student") {
-          navigate("/student/dashboard"); // this can be modified
+          navigate("/student/dashboard");
         }
       }
     } catch (err) {

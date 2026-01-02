@@ -1,6 +1,6 @@
 // src/App.js
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import AuthForm from "./pages/login.jsx";
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
@@ -18,17 +18,12 @@ import StudentQuizResult from "./pages/StudentQuizResult.jsx"; // ✅ NEW
 function App() {
   const [csrfToken, setCsrfToken] = useState("");
 
-  useEffect(() => {
-    fetch("http://localhost:3000/csrf-token", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setCsrfToken(data.csrfToken))
-      .catch((err) => console.error("CSRF token fetch error:", err));
-  }, []);
+
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AuthForm csrfToken={csrfToken} />} />
+        <Route path="/" element={<AuthForm setCsrfToken={setCsrfToken} />} />
 
         {/* TEACHER */}
         <Route
