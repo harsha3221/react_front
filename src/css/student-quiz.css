@@ -1,0 +1,162 @@
+/* =========================
+   STUDENT QUIZ PAGE
+   ========================= */
+
+.student-quiz-page {
+  background: var(--bg-0);
+  min-height: 100vh;
+  padding: 32px 24px 80px;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* =========================
+   QUIZ HEADER
+   ========================= */
+
+.student-quiz-page h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+/* =========================
+   TIMER (STICKY)
+   ========================= */
+
+.quiz-timer {
+  position: sticky;
+  top: 16px;
+  float: right;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #dc2626;
+  box-shadow: var(--shadow-soft);
+  z-index: 10;
+}
+
+/* =========================
+   QUESTION CARD
+   ========================= */
+
+.question-card {
+  margin-top: 24px;
+  background: var(--bg-1);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* question text */
+.question-card h4 {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* =========================
+   OPTIONS
+   ========================= */
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 140ms var(--ease);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+/* hover */
+.option:hover {
+  background: rgba(67, 97, 238, 0.06);
+}
+
+/* checkbox */
+.option input {
+  margin-top: 3px;
+  accent-color: var(--accent-1);
+  cursor: pointer;
+}
+
+/* =========================
+   SUBMIT BUTTON
+   ========================= */
+
+.btn-submit {
+  margin-top: 40px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 14px 32px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(67, 97, 238, 0.35);
+}
+
+.btn-submit:hover {
+  box-shadow: 0 14px 36px rgba(67, 97, 238, 0.45);
+}
+
+/* =========================
+   ERROR
+   ========================= */
+
+.student-quiz-page .error {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-weight: 500;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+  .quiz-timer {
+    float: none;
+    position: sticky;
+    top: 0;
+    margin-bottom: 16px;
+    width: fit-content;
+  }
+
+  .student-quiz-page {
+    padding: 24px 16px 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-quiz-page h2 {
+    font-size: 1.5rem;
+  }
+
+  .question-card {
+    padding: 16px;
+  }
+
+  .btn-submit {
+    width: 100%;
+  }
+}

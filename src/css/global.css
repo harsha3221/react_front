@@ -1,0 +1,245 @@
+/* global.css — Quiz Platform (Light, Clean, Focused) */
+
+/* ===== Theme variables ===== */
+:root {
+  /* Backgrounds */
+  --bg-0: #f8fafc; /* page background */
+  --bg-1: #ffffff; /* cards */
+  --panel: #ffffff;
+
+  /* Text */
+  --text: #1e293b; /* primary text */
+  --muted: #64748b; /* secondary text */
+
+  /* Brand */
+  --accent-1: #4361ee; /* primary blue */
+  --accent-2: #4cc9f0; /* sky blue */
+  --accent-3: #22c55e; /* success */
+
+  /* Status */
+  --danger: #ef4444;
+  --success: #22c55e;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  /* Shadows */
+  --shadow-soft: 0 6px 20px rgba(15, 23, 42, 0.08);
+  --shadow-strong: 0 16px 40px rgba(15, 23, 42, 0.12);
+
+  --ease: cubic-bezier(0.16, 0.84, 0.44, 1);
+  --max-width: 1120px;
+  --gap: 1rem;
+  --container-padding: 22px;
+}
+
+/* ===== Page / body ===== */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+}
+
+/* ensure border-box everywhere */
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/* ===== Layout helpers ===== */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--container-padding);
+}
+
+.row {
+  display: flex;
+  gap: var(--gap);
+  align-items: center;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Card component ===== */
+.card {
+  background: var(--bg-1);
+  border: 1px solid #e2e8f0;
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: transform 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-strong);
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: transform 120ms var(--ease), box-shadow 120ms var(--ease),
+    background 120ms var(--ease), opacity 120ms var(--ease);
+  user-select: none;
+}
+
+/* Primary button (Login, Start Quiz, Submit) */
+.btn-primary {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(67, 97, 238, 0.25);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 30px rgba(67, 97, 238, 0.35);
+}
+
+/* Ghost / secondary */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--accent-1);
+  color: var(--accent-1);
+}
+
+/* Danger */
+.btn-danger {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+/* Success */
+.btn-success {
+  background: var(--success);
+  color: #ffffff;
+}
+
+/* Disabled */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Small button */
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 0.88rem;
+}
+
+/* ===== Forms & Inputs ===== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.input,
+textarea,
+select {
+  background: #f1f5f9;
+  border: 1px solid #cbd5f5;
+  color: var(--text);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
+  font-size: 0.95rem;
+}
+
+.input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+/* helper text */
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ===== Quiz media ===== */
+.media {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+/* ===== Typography helpers ===== */
+.h1 {
+  font-size: 1.6rem;
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.h2 {
+  font-size: 1.15rem;
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--accent-1);
+}
+
+.p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.kv {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  :root {
+    --container-padding: 14px;
+  }
+  .media {
+    max-height: 240px;
+  }
+}

@@ -1,0 +1,31 @@
+/* create-quiz.css */
+@import "./global.css";
+
+.create-quiz-container {
+  max-width: 680px;
+  margin: 40px auto;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: var(--shadow-soft);
+}
+
+.create-quiz-container h2 {
+  margin: 0 0 12px;
+  color: var(--accent-1);
+  font-size: 1.4rem;
+}
+
+.error,
+.success {
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.error {
+  background: rgba(255, 120, 120, 0.06);
+}

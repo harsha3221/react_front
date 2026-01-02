@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/teacher-dashboard.css";
+import Navbar from "../components/Navbar";
 
-export default function TeacherDashboard({csrfToken}) {
+export default function TeacherDashboard({ csrfToken }) {
   const [teacher, setTeacher] = useState(null);
   const [subjects, setSubjects] = useState([]);
-  const  [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -13,8 +15,9 @@ export default function TeacherDashboard({csrfToken}) {
   });
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Fetch teacher dashboard data
     fetch("http://localhost:3000/teacher/dashboard", {
       credentials: "include",
     })
@@ -45,9 +48,9 @@ export default function TeacherDashboard({csrfToken}) {
 
     fetch("http://localhost:3000/teacher/create-subject", {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "CSRF-Token": csrfToken 
+        "CSRF-Token": csrfToken,
       },
       credentials: "include",
       body: JSON.stringify(formData),
@@ -71,84 +74,117 @@ export default function TeacherDashboard({csrfToken}) {
   };
 
   return (
-    <div className="teacher-dashboard">
-      <h1>Teacher Dashboard</h1>
+    <>
+      <Navbar role="teacher"></Navbar>
+      <div className="teacher-dashboard">
+        <h1>Teacher Dashboard</h1>
+        {error && <p className="error">{error}</p>}
 
-      {error && <p className="error">{error}</p>}
+        {teacher ? (
+          <>
+            <h2>Welcome, {teacher.name}</h2>
+            <p>Department: {teacher.department || "N/A"}</p>
 
-      {teacher ? (
-        <>
-          <h2>Welcome, {teacher.name}</h2>
-          <p>Department: {teacher.department || "N/A"}</p>
+            <div className="dashboard-header">
+              <h3>Your Subjects</h3>
+              <button
+                className="create-btn"
+                onClick={() => setShowForm(!showForm)}
+              >
+                {showForm ? "Cancel" : "Create Subject"}
+              </button>
+            </div>
 
-          <div className="dashboard-header">
-            <h3>Your Subjects</h3>
-            <button className="create-btn" onClick={() => setShowForm(!showForm)}>
-              {showForm ? "Cancel" : "Create Subject"}
-            </button>
-          </div>
+            {showForm && (
+              <form
+                className="create-subject-form"
+                onSubmit={handleCreateSubject}
+              >
+                <input
+                  type="text"
+                  placeholder="Subject Name"
+                  value={formData.name}
+                  onChange={handleChange("name")}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Subject Code"
+                  value={formData.code}
+                  onChange={handleChange("code")}
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Semester"
+                  value={formData.semester}
+                  onChange={handleChange("semester")}
+                  required
+                />
+                <textarea
+                  placeholder="Description"
+                  value={formData.description}
+                  onChange={handleChange("description")}
+                />
 
-          {showForm && (
-            <form className="create-subject-form" onSubmit={handleCreateSubject}>
-              <input
-                type="text"
-                placeholder="Subject Name"
-                value={formData.name}
-                onChange={handleChange("name")}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Subject Code"
-                value={formData.code}
-                onChange={handleChange("code")}
-                required
-              />
-              <input
-                type="number"
-                placeholder="Semester"
-                value={formData.semester}
-                onChange={handleChange("semester")}
-                required
-              />
-              <textarea
-                placeholder="Description"
-                value={formData.description}
-                onChange={handleChange("description")}
-              />
-              
-              {/* MODIFIED: Added form-actions for Cancel and Submit buttons */}
-              <div className="form-actions">
-                  <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>
-                      Cancel
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={() => setShowForm(false)}
+                  >
+                    Cancel
                   </button>
                   <button type="submit" className="submit-btn">
-                      Add Subject
+                    Add Subject
                   </button>
-              </div>
-              {/* END MODIFIED */}
-
-            </form>
-          )}
-
-          <div className="subjects-list">
-            {subjects.length > 0 ? (
-              subjects.map((sub) => (
-                <div key={sub.id} className="subject-card">
-                  <h4>{sub.name}</h4>
-                  <p><strong>Code:</strong> {sub.code}</p>
-                  <p><strong>Semester:</strong> {sub.semester}</p>
-                  <p>{sub.description}</p>
                 </div>
-              ))
-            ) : (
-              <p>No subjects found.</p>
+              </form>
             )}
-          </div>
-        </>
-      ) : (
-        <p>Loading dashboard...</p>
-      )}
-    </div>
+
+            <div className="subjects-list">
+              {subjects.length > 0 ? (
+                subjects.map((sub) => (
+                  <div key={sub.id} className="subject-card">
+                    <h4>{sub.name}</h4>
+                    <p>
+                      <strong>Code:</strong> {sub.code}
+                    </p>
+                    <p>
+                      <strong>Semester:</strong> {sub.semester}
+                    </p>
+                    <p>{sub.description}</p>
+
+                    <div className="subject-actions">
+                      <button
+                        className="quiz-btn"
+                        onClick={() =>
+                          navigate(`/teacher/subjects/${sub.id}/quizzes`)
+                        }
+                      >
+                        View Quizzes
+                      </button>
+
+                      <button
+                        className="quiz-btn"
+                        onClick={() =>
+                          navigate(`/teacher/subjects/${sub.id}/quizzes/new`)
+                        }
+                      >
+                        Create Quiz
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No subjects found.</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <p>Loading dashboard...</p>
+        )}
+      </div>
+    </>
   );
 }

@@ -1,0 +1,98 @@
+/* quiz-questions.css */
+@import "./global.css";
+
+.quiz-questions-container {
+  max-width: var(--max-width);
+  margin: 30px auto;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: var(--shadow-soft);
+}
+
+.quiz-questions-container h2 {
+  margin: 0 0 12px;
+  color: var(--accent-2);
+  font-size: 1.2rem;
+}
+.quiz-questions-container h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 48vh;
+  overflow: auto;
+  padding-right: 6px;
+  margin-bottom: 12px;
+}
+
+.question-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.question-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.question-image-wrapper {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+.question-image {
+  width: 100%;
+  max-width: 720px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.add-question-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.option-row input[type="text"] {
+  flex: 1;
+}
+
+/* Buttons */
+.btn-primary {
+  align-self: flex-start;
+}
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+}
+
+/* make sure long lists don't cause visual jank on mobile */
+@media (max-width: 768px) {
+  .quiz-questions-container {
+    padding: 14px;
+  }
+  .question-image {
+    max-height: 220px;
+  }
+}
