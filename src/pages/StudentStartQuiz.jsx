@@ -164,7 +164,7 @@ export default function StudentStartQuiz({ csrfToken }) {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        "CSRF-Token": csrfToken,
+        "X-CSRF-Token": csrfToken,
       },
       body: JSON.stringify({ question_id: questionId, option_ids: optionIds }),
     });

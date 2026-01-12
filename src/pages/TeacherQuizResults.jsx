@@ -9,17 +9,14 @@ export default function TeacherQuizResults({ csrfToken }) {
   const [published, setPublished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [publishing, setPublishing] = useState(false); // ✅ NEW
 
-  /* -------------------------------------------------- */
-  /* LOAD RESULTS + PUBLISH STATUS FROM SERVER           */
-  /* -------------------------------------------------- */
   const loadResults = () => {
     setLoading(true);
     setError("");
 
     fetch(`http://localhost:3000/teacher/quiz/${quizId}/results`, {
       credentials: "include",
-      headers: { "X-CSRF-Token": csrfToken },
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -30,7 +27,7 @@ export default function TeacherQuizResults({ csrfToken }) {
       })
       .then((data) => {
         setResults(data.results || []);
-        setPublished(!!data.results_published); // ⭐ SOURCE OF TRUTH
+        setPublished(!!data.results_published);
         setLoading(false);
       })
       .catch((err) => {
@@ -39,12 +36,17 @@ export default function TeacherQuizResults({ csrfToken }) {
       });
   };
 
-  useEffect(loadResults, [quizId, csrfToken]);
+  useEffect(() => {
+    loadResults();
+  }, [quizId]);
 
   /* -------------------------------------------------- */
-  /* PUBLISH RESULTS                                    */
+  /* PUBLISH RESULTS (DOUBLE-CLICK SAFE)                */
   /* -------------------------------------------------- */
   const publishResults = async () => {
+    if (publishing) return; // ✅ guard
+    setPublishing(true);
+
     try {
       const res = await fetch(
         `http://localhost:3000/teacher/quiz/${quizId}/publish-results`,
@@ -61,9 +63,11 @@ export default function TeacherQuizResults({ csrfToken }) {
       }
 
       alert("✅ Results published to students");
-      loadResults(); // 🔁 re-sync from DB
+      loadResults();
     } catch (err) {
       alert(err.message);
+    } finally {
+      setPublishing(false); // ✅ always reset
     }
   };
 
@@ -99,8 +103,12 @@ export default function TeacherQuizResults({ csrfToken }) {
 
         {/* PUBLISH BUTTON */}
         {!published ? (
-          <button className="btn-publish" onClick={publishResults}>
-            📢 Publish Results to Students
+          <button
+            className="btn-publish"
+            onClick={publishResults}
+            disabled={publishing} // ✅ disable during request
+          >
+            {publishing ? "Publishing..." : "📢 Publish Results to Students"}
           </button>
         ) : (
           <p style={{ color: "green", fontWeight: "bold" }}>

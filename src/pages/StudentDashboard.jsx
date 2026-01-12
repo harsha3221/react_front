@@ -14,7 +14,7 @@ export default function StudentDashboard({ csrfToken }) {
     // ⬅️ This route now only returns student profile and joined courses
     fetch("http://localhost:3000/student/dashboard", {
       method: "GET",
-      headers: { "CSRF-Token": csrfToken },
+      // headers: { "CSRF-Token": csrfToken },
       credentials: "include",
     })
       .then(async (res) => {
@@ -33,7 +33,7 @@ export default function StudentDashboard({ csrfToken }) {
         setError(err.message);
         setLoading(false);
       });
-  }, [csrfToken]);
+  }, []);
 
   if (loading) {
     return (

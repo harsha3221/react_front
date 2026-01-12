@@ -24,7 +24,7 @@ export default function CreateQuiz({ csrfToken }) {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "CSRF-Token": csrfToken,
+          "X-CSRF-Token": csrfToken,
         },
         body: JSON.stringify({
           subject_id: subjectId,

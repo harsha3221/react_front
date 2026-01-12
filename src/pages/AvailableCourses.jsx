@@ -17,7 +17,7 @@ export default function AvailableCourses({ csrfToken }) {
   useEffect(() => {
     fetch("http://localhost:3000/student/available-courses", {
       method: "GET",
-      headers: { "CSRF-Token": csrfToken },
+      // headers: { "CSRF-Token": csrfToken },
       credentials: "include",
     })
       .then(async (res) => {

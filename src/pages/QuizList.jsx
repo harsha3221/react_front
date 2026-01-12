@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import "../css/quiz-list.css";
 
 export default function QuizList({ csrfToken }) {
   const { subjectId } = useParams();
@@ -32,7 +34,7 @@ export default function QuizList({ csrfToken }) {
 
     fetch(`http://localhost:3000/quiz/subject/${subjectId}`, {
       credentials: "include",
-      headers: { "CSRF-Token": csrfToken },
+      // headers: { "CSRF-Token": csrfToken },
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -49,80 +51,83 @@ export default function QuizList({ csrfToken }) {
         console.error("Error loading quizzes:", err);
         setError(err.message);
       });
-  }, [subjectId, csrfToken]);
+  }, [subjectId]);
 
   return (
-    <div className="quiz-list-container">
-      <h2>Quizzes for {subjectName}</h2>
+    <>
+      <Navbar role="teacher"></Navbar>
+      <div className="quiz-list-container">
+        <h2>Quizzes for {subjectName}</h2>
 
-      {error && <p className="error">{error}</p>}
+        {error && <p className="error">{error}</p>}
 
-      <Link
-        to={`/teacher/subjects/${subjectId}/quizzes/new`}
-        className="btn-create"
-      >
-        ➕ Create New Quiz
-      </Link>
+        <Link
+          to={`/teacher/subjects/${subjectId}/quizzes/new`}
+          className="btn-create"
+        >
+          ➕ Create New Quiz
+        </Link>
 
-      {quizzes.length === 0 ? (
-        <p>No quizzes created yet.</p>
-      ) : (
-        <ul className="quiz-list">
-          {quizzes.map((quiz) => {
-            const state = getQuizState(quiz);
+        {quizzes.length === 0 ? (
+          <p>No quizzes created yet.</p>
+        ) : (
+          <ul className="quiz-list">
+            {quizzes.map((quiz) => {
+              const state = getQuizState(quiz);
 
-            return (
-              <li key={quiz.id} className="quiz-item">
-                <div>
-                  <strong>{quiz.title}</strong> <br />
-                  {new Date(quiz.start_time).toLocaleString()} →{" "}
-                  {new Date(quiz.end_time).toLocaleString()}
-                  <br />
-                  <span className={`quiz-status quiz-status-${state}`}>
-                    {state === "draft"
-                      ? "Draft (Upcoming)"
-                      : state === "active"
-                      ? "Active (Running)"
-                      : "Completed"}
-                  </span>
-                </div>
+              return (
+                <li key={quiz.id} className="quiz-item">
+                  <div>
+                    <strong>{quiz.title}</strong> <br />
+                    {new Date(quiz.start_time).toLocaleString()} →{" "}
+                    {new Date(quiz.end_time).toLocaleString()}
+                    <br />
+                    <span className={`quiz-status quiz-status-${state}`}>
+                      {state === "draft"
+                        ? "Draft (Upcoming)"
+                        : state === "active"
+                        ? "Active (Running)"
+                        : "Completed"}
+                    </span>
+                  </div>
 
-                <div className="quiz-actions">
-                  {/* Draft → editable */}
-                  {state === "draft" && (
-                    <Link
-                      to={`/teacher/quiz/${quiz.id}/questions`}
-                      className="btn-view"
-                    >
-                      View / Add Questions
-                    </Link>
-                  )}
+                  <div className="quiz-actions">
+                    {/* Draft → editable */}
+                    {state === "draft" && (
+                      <Link
+                        to={`/teacher/quiz/${quiz.id}/questions`}
+                        className="btn-view"
+                      >
+                        View / Add Questions
+                      </Link>
+                    )}
 
-                  {/* Active → view-only */}
-                  {state === "active" && (
-                    <Link
-                      to={`/teacher/quiz/${quiz.id}/questions`}
-                      className="btn-view"
-                    >
-                      View Questions
-                    </Link>
-                  )}
+                    {/* Active → view-only */}
+                    {state === "active" && (
+                      <Link
+                        to={`/teacher/quiz/${quiz.id}/questions`}
+                        className="btn-view"
+                      >
+                        View Questions
+                      </Link>
+                    )}
 
-                  {/* Completed → results */}
-                  {state === "completed" && (
-                    <Link
-                      to={`/teacher/quiz/${quiz.id}/results`}
-                      className="btn-view"
-                    >
-                      View Results
-                    </Link>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+                    {/* Completed → results */}
+                    {state === "completed" && (
+                      <Link
+                        to={`/teacher/quiz/${quiz.id}/results`}
+                        className="btn-view"
+                      >
+                        View Results
+                      </Link>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </>
   );
 }
