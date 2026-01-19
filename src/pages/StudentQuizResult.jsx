@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
-export default function StudentQuizResult({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function StudentQuizResult() {
   const { quizId } = useParams();
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-
+  const { csrfToken } = useAuth();
   useEffect(() => {
     fetch(`http://localhost:3000/student/quiz/${quizId}/result`, {
       credentials: "include",

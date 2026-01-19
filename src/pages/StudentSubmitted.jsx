@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../css/student-quiz.css"; // reuse neon theme
-
-export default function StudentQuizSubmitted({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function StudentQuizSubmitted() {
   const { quizId } = useParams();
   const navigate = useNavigate();
-
+  const { csrfToken } = useAuth();
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
 

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "../css/quiz-list.css";
-
-export default function QuizList({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function QuizList() {
   const { subjectId } = useParams();
   const [quizzes, setQuizzes] = useState([]);
   const [subjectName, setSubjectName] = useState("");
   const [error, setError] = useState("");
   const [now, setNow] = useState(new Date()); // ⏱ live clock
-
+  const { csrfToken } = useAuth();
   /* ⏱ Update time every minute */
   useEffect(() => {
     const timer = setInterval(() => {

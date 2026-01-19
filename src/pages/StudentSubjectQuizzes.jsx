@@ -3,11 +3,11 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../css/student-dashboard.css";
 import Navbar from "../components/Navbar";
-
-export default function StudentSubjectQuizzes({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function StudentSubjectQuizzes() {
   const { subjectId } = useParams();
   const navigate = useNavigate();
-
+  const { csrfToken } = useAuth();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

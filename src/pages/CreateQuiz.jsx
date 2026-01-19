@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../css/create-quiz.css";
+import { useAuth } from "../context/AuthContext";
 
-export default function CreateQuiz({ csrfToken }) {
+export default function CreateQuiz() {
   const { subjectId } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -12,7 +13,7 @@ export default function CreateQuiz({ csrfToken }) {
   const [endTime, setEndTime] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
+  const { csrfToken } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");

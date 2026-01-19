@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/login.css";
+import { useAuth } from "../context/AuthContext";
 
 // Component for a standard input/select group
 function InputField({
@@ -42,12 +43,12 @@ const initialFormData = {
   year: "",
 };
 
-export default function AuthForm({ setCsrfToken }) {
+export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState("");
   const navigate = useNavigate(); // ✅ for redirecting after login
-
+  const { setCsrfToken } = useAuth();
   // Handler for all standard text/email/password inputs
   const handleChange = (field) => (e) => {
     if (field === "role") {

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import "../css/student-dashboard.css";
 import Navbar from "../components/Navbar";
-
-export default function AvailableCourses({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function AvailableCourses() {
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [joinedIds, setJoinedIds] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState(""); // ✅ NEW
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const { csrfToken } = useAuth();
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, []);

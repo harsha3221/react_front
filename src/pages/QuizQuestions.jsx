@@ -2,9 +2,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import "../css/quiz-questions.css";
+import { useAuth } from "../context/AuthContext";
 
-export default function QuizQuestions({ csrfToken }) {
+export default function QuizQuestions() {
   const { quizId } = useParams();
+  const { csrfToken } = useAuth();
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);

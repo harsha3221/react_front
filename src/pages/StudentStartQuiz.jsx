@@ -1,16 +1,16 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../css/student-quiz.css";
-
+import { useAuth } from "../context/AuthContext";
 /* -------------------------------------------------- */
 /* HELPERS                                            */
 /* -------------------------------------------------- */
 const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
-export default function StudentStartQuiz({ csrfToken }) {
+export default function StudentStartQuiz() {
   const { quizId } = useParams();
   const navigate = useNavigate();
-
+  const { csrfToken } = useAuth();
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});

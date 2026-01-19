@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import "../css/student-dashboard.css";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-
-export default function StudentDashboard({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function StudentDashboard() {
   const [student, setStudent] = useState(null);
   // Renamed for clarity: we only fetch joined courses here
   const [joinedSubjects, setJoinedSubjects] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { csrfToken } = useAuth();
   useEffect(() => {
     // ⬅️ This route now only returns student profile and joined courses
     fetch("http://localhost:3000/student/dashboard", {

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/teacher-dashboard.css";
 import Navbar from "../components/Navbar";
-
-export default function TeacherDashboard({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function TeacherDashboard() {
   const [teacher, setTeacher] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -14,7 +14,7 @@ export default function TeacherDashboard({ csrfToken }) {
     description: "",
   });
   const [error, setError] = useState("");
-
+  const { csrfToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

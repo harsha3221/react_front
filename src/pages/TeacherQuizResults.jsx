@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
-
-export default function TeacherQuizResults({ csrfToken }) {
+import { useAuth } from "../context/AuthContext";
+export default function TeacherQuizResults() {
   const { quizId } = useParams();
-
+  const { csrfToken } = useAuth();
   const [results, setResults] = useState([]);
   const [published, setPublished] = useState(false);
   const [loading, setLoading] = useState(true);
