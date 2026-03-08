@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../css/student-dashboard.css";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE } from "../config";
 export default function AvailableCourses() {
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [joinedIds, setJoinedIds] = useState(new Set());
@@ -15,7 +16,7 @@ export default function AvailableCourses() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:3000/student/available-courses", {
+    fetch(`${API_BASE}/student/available-courses`, {
       method: "GET",
       // headers: { "CSRF-Token": csrfToken },
       credentials: "include",
@@ -42,7 +43,7 @@ export default function AvailableCourses() {
     setError("");
     setSuccess("");
 
-    fetch("http://localhost:3000/student/join-course", {
+    fetch(`${API_BASE}/student/join-course`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,7 +64,7 @@ export default function AvailableCourses() {
 
   // ✅ FILTER COURSES BASED ON SEARCH
   const filteredSubjects = availableSubjects.filter((sub) =>
-    sub.name.toLowerCase().includes(searchTerm.toLowerCase())
+    sub.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (loading) {

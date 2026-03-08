@@ -1,31 +1,189 @@
-/* create-quiz.css */
-@import "./global.css";
+/* =========================
+   CREATE QUIZ PAGE (POLISHED)
+   ========================= */
 
 .create-quiz-container {
-  max-width: 680px;
-  margin: 40px auto;
-  padding: 24px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: var(--shadow-soft);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
 }
+
+/* =========================
+   HEADING
+   ========================= */
 
 .create-quiz-container h2 {
-  margin: 0 0 12px;
-  color: var(--accent-1);
-  font-size: 1.4rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
 }
 
-.error,
-.success {
-  padding: 10px 12px;
+/* subtle subtitle spacing */
+.create-quiz-container h2 + p {
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* =========================
+   FEEDBACK MESSAGES
+   ========================= */
+
+.create-quiz-container .error,
+.create-quiz-container .success {
+  margin-bottom: 18px;
+  padding: 12px 16px;
   border-radius: 10px;
-  margin-bottom: 12px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.create-quiz-container .error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.create-quiz-container .success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+
+/* =========================
+   FORM WRAPPER
+   ========================= */
+
+.quiz-form {
+  background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.96));
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 26px 28px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* =========================
+   LABELS
+   ========================= */
+
+.quiz-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* =========================
+   INPUTS & TEXTAREA
+   ========================= */
+
+.quiz-form input,
+.quiz-form textarea {
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: var(--text);
+  transition:
+    border-color 140ms var(--ease),
+    box-shadow 140ms var(--ease),
+    transform 80ms ease;
+}
+
+.quiz-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* focus */
+.quiz-form input:focus,
+.quiz-form textarea:focus {
+  outline: none;
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.14);
+}
+
+/* subtle active feedback */
+.quiz-form input:active,
+.quiz-form textarea:active {
+  transform: scale(0.995);
+}
+
+/* =========================
+   PRIMARY SUBMIT BUTTON
+   ========================= */
+
+.quiz-form .btn-submit {
+  margin-top: 14px;
+  align-self: flex-start;
+  padding: 13px 28px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  color: #ffffff;
   font-size: 0.95rem;
   font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 32px rgba(67, 97, 238, 0.4);
+  transition:
+    box-shadow 160ms var(--ease),
+    transform 120ms ease;
 }
 
-.error {
-  background: rgba(255, 120, 120, 0.06);
+.quiz-form .btn-submit:hover {
+  box-shadow: 0 14px 40px rgba(67, 97, 238, 0.55);
+}
+
+.quiz-form .btn-submit:active {
+  transform: translateY(1px);
+}
+
+/* =========================
+   BACK BUTTON
+   ========================= */
+
+.btn-back {
+  margin-top: 22px;
+  background: none;
+  border: none;
+  color: var(--accent-1);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  text-decoration: underline;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+  .create-quiz-container {
+    padding: 28px 16px 56px;
+  }
+
+  .quiz-form {
+    padding: 22px 20px;
+  }
+
+  .quiz-form .btn-submit {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-quiz-container h2 {
+    font-size: 1.55rem;
+  }
 }

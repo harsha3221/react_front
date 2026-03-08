@@ -2,6 +2,13 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../css/student-quiz.css";
 import { useAuth } from "../context/AuthContext";
+
+import {
+  startStudentQuizApi,
+  saveStudentAnswerApi,
+  submitStudentQuizApi,
+} from "../api/studentQuizStart.api";
+
 /* -------------------------------------------------- */
 /* HELPERS                                            */
 /* -------------------------------------------------- */
@@ -11,6 +18,7 @@ export default function StudentStartQuiz() {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const { csrfToken } = useAuth();
+
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -24,19 +32,14 @@ export default function StudentStartQuiz() {
   const isSubmittingRef = useRef(false);
 
   /* -------------------------------------------------- */
-  /* SUBMIT                                             */
+  /* SUBMIT (SAFE AGAINST DOUBLE CALLS)                  */
   /* -------------------------------------------------- */
   const handleSubmit = useCallback(async () => {
     if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
 
     try {
-      await fetch(`http://localhost:3000/student/quiz/${quizId}/submit`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "CSRF-Token": csrfToken },
-      });
-
+      await submitStudentQuizApi(quizId, csrfToken);
       navigate(`/student/quiz/${quizId}/submitted`, { replace: true });
     } catch {
       alert("Submit failed. Please contact instructor.");
@@ -50,15 +53,9 @@ export default function StudentStartQuiz() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:3000/student/quiz/${quizId}/start`,
-          {
-            credentials: "include",
-            headers: { "CSRF-Token": csrfToken },
-          }
-        );
-
+        const res = await startStudentQuizApi(quizId, csrfToken);
         const data = await res.json();
+
         if (!res.ok) throw new Error(data.message);
 
         if (data.attempt?.submitted) {
@@ -66,18 +63,16 @@ export default function StudentStartQuiz() {
           return;
         }
 
-        /* RANDOMIZE QUESTIONS + OPTIONS */
         const randomizedQuestions = shuffle(
           (data.questions || []).map((q) => ({
             ...q,
             options: shuffle(q.options || []),
-          }))
+          })),
         );
 
         setQuiz(data.quiz);
         setQuestions(randomizedQuestions);
 
-        /* Normalize answers (always array) */
         const map = {};
         (data.existingAnswers || []).forEach((a) => {
           if (!map[a.question_id]) map[a.question_id] = [];
@@ -85,11 +80,9 @@ export default function StudentStartQuiz() {
         });
         setAnswers(map);
 
-        /* TIMER = started_at + duration_minutes */
         const startedAt = new Date(data.attempt.started_at).getTime();
         const durationMs = data.quiz.duration_minutes * 60 * 1000;
-        const endTime = startedAt + durationMs;
-        setTimeLeft(Math.max(0, endTime - Date.now()));
+        setTimeLeft(Math.max(0, startedAt + durationMs - Date.now()));
       } catch (err) {
         setError(err.message || "Failed to load quiz");
       } finally {
@@ -156,20 +149,8 @@ export default function StudentStartQuiz() {
   }, [handleSubmit]);
 
   /* -------------------------------------------------- */
-  /* SAVE ANSWERS (MULTI SELECT)                         */
+  /* SAVE ANSWERS                                       */
   /* -------------------------------------------------- */
-  const saveAnswer = async (questionId, optionIds) => {
-    await fetch(`http://localhost:3000/student/quiz/${quizId}/answer`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken,
-      },
-      body: JSON.stringify({ question_id: questionId, option_ids: optionIds }),
-    });
-  };
-
   const toggleOption = (qid, oid) => {
     setAnswers((prev) => {
       const cur = prev[qid] || [];
@@ -177,7 +158,10 @@ export default function StudentStartQuiz() {
         ? cur.filter((x) => x !== oid)
         : [...cur, oid];
 
-      saveAnswer(qid, updated);
+      saveStudentAnswerApi(quizId, qid, updated, csrfToken).catch(() =>
+        console.error("Failed to save answer"),
+      );
+
       return { ...prev, [qid]: updated };
     });
   };
@@ -219,7 +203,11 @@ export default function StudentStartQuiz() {
         </div>
       ))}
 
-      <button className="btn-submit" onClick={handleSubmit}>
+      <button
+        className="btn-submit"
+        onClick={handleSubmit}
+        disabled={isSubmittingRef.current}
+      >
         Submit Quiz
       </button>
     </div>

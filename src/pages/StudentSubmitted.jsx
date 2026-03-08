@@ -1,52 +1,54 @@
 // src/pages/StudentQuizSubmitted.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../css/student-quiz.css"; // reuse neon theme
+import "../css/student-quiz.css";
 import { useAuth } from "../context/AuthContext";
+
+import { fetchStudentQuizSummaryApi } from "../api/studentQuizSubmitted.api";
+
 export default function StudentQuizSubmitted() {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const { csrfToken } = useAuth();
+
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Prevent back navigation into quiz
+  /* -------------------------------------------------- */
+  /* PREVENT BACK NAVIGATION INTO QUIZ                  */
+  /* -------------------------------------------------- */
   useEffect(() => {
     window.history.pushState(null, "", window.location.href);
+
     const onPop = () => {
       window.history.pushState(null, "", window.location.href);
       alert("Quiz is already submitted. You cannot go back.");
     };
+
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  // Fetch quiz summary
+  /* -------------------------------------------------- */
+  /* FETCH QUIZ SUMMARY                                 */
+  /* -------------------------------------------------- */
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:3000/student/quiz/${quizId}/summary`,
-          {
-            credentials: "include",
-            headers: { "CSRF-Token": csrfToken },
-          }
-        );
-
+    fetchStudentQuizSummaryApi(quizId, csrfToken)
+      .then(async (res) => {
         const data = await res.json();
         if (res.ok) {
           setQuiz(data.quiz);
         }
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error("Error loading quiz summary:", err);
-      }
-      setLoading(false);
-    };
-
-    load();
+      })
+      .finally(() => setLoading(false));
   }, [quizId, csrfToken]);
 
-  if (loading) return <div className="student-quiz-page">Loading...</div>;
+  if (loading) {
+    return <div className="student-quiz-page">Loading...</div>;
+  }
 
   return (
     <div className="student-quiz-page neon-bg">

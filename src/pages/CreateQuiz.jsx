@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../css/create-quiz.css";
 import { useAuth } from "../context/AuthContext";
+import { createQuizApi } from "../api/quiz.api";
 
 export default function CreateQuiz() {
   const { subjectId } = useParams();
   const navigate = useNavigate();
+  const { csrfToken } = useAuth();
+
+  /* ---------------- FORM STATE ---------------- */
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("");
@@ -13,32 +17,62 @@ export default function CreateQuiz() {
   const [endTime, setEndTime] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const { csrfToken } = useAuth();
+
+  const STORAGE_KEY = `create-quiz-draft-${subjectId}`;
+
+  /* LOAD SAVED DRAFT */
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        setTitle(data.title || "");
+        setDescription(data.description || "");
+        setDuration(data.duration || "");
+        setStartTime(data.startTime || "");
+        setEndTime(data.endTime || "");
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, [STORAGE_KEY]);
+
+  /* SAVE DRAFT */
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        title,
+        description,
+        duration,
+        startTime,
+        endTime,
+      }),
+    );
+  }, [title, description, duration, startTime, endTime, STORAGE_KEY]);
+
+  /* SUBMIT */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:3000/quiz/create", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify({
-          subject_id: subjectId,
-          title,
-          description,
-          duration_minutes: parseInt(duration, 10),
-          start_time: startTime,
-          end_time: endTime,
-        }),
+      const res = await createQuizApi({
+        subjectId,
+        title,
+        description,
+        duration,
+        startTime,
+        endTime,
+        csrfToken,
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create quiz");
+
+      /* CLEAR DRAFT */
+      localStorage.removeItem(STORAGE_KEY);
 
       setMessage("✅ Quiz created successfully!");
       setTimeout(() => {
@@ -50,9 +84,11 @@ export default function CreateQuiz() {
     }
   };
 
+  /* RENDER */
   return (
     <div className="create-quiz-container">
       <h2>Create New Quiz</h2>
+
       {error && <p className="error">{error}</p>}
       {message && <p className="success">{message}</p>}
 

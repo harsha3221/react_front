@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { fetchStudentQuizResultApi } from "../api/studentQuiz.api";
+
 export default function StudentQuizResult() {
   const { quizId } = useParams();
+  const { csrfToken } = useAuth();
+
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const { csrfToken } = useAuth();
+
+  /* ---------------------------------- */
+  /* LOAD RESULT                        */
+  /* ---------------------------------- */
   useEffect(() => {
-    fetch(`http://localhost:3000/student/quiz/${quizId}/result`, {
-      credentials: "include",
-      headers: { "CSRF-Token": csrfToken },
-    })
+    fetchStudentQuizResultApi(quizId, csrfToken)
       .then(async (res) => {
         if (!res.ok) throw new Error("Result not available");
         return res.json();
@@ -19,6 +23,9 @@ export default function StudentQuizResult() {
       .catch((err) => setError(err.message));
   }, [quizId, csrfToken]);
 
+  /* ---------------------------------- */
+  /* RENDER                             */
+  /* ---------------------------------- */
   if (error) return <div>{error}</div>;
   if (!result) return <div>Loading…</div>;
 

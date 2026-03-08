@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/login.css";
 import { useAuth } from "../context/AuthContext";
+import { loginApi, signupApi, meApi } from "../api/auth.api";
 
-// Component for a standard input/select group
+/* Component for a standard input/select group */
 function InputField({
   label,
   type,
@@ -32,7 +33,6 @@ function InputField({
   );
 }
 
-// Initial state for the form data (used for clearing)
 const initialFormData = {
   name: "",
   email: "",
@@ -47,9 +47,10 @@ export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // ✅ for redirecting after login
-  const { setCsrfToken } = useAuth();
-  // Handler for all standard text/email/password inputs
+
+  const navigate = useNavigate();
+  const { setCsrfToken, setUser } = useAuth();
+
   const handleChange = (field) => (e) => {
     if (field === "role") {
       let newState = { ...formData, [field]: e.target.value };
@@ -67,19 +68,9 @@ export default function AuthForm() {
     setIsLogin(!isLogin);
   };
 
-  // ✅ FETCH CSRF TOKEN AFTER LOGIN (logic only, no JSX touched)
-  const fetchCsrfToken = async () => {
-    const res = await fetch("http://localhost:3000/csrf-token", {
-      credentials: "include",
-    });
-    const data = await res.json();
-    setCsrfToken(data.csrfToken);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    console.log("Submitting form data:", formData);
 
     if (!isLogin) {
       if (formData.password !== formData.confirmPassword) {
@@ -93,55 +84,62 @@ export default function AuthForm() {
       }
     }
 
-    const url = isLogin
-      ? "http://localhost:3000/login"
-      : "http://localhost:3000/signup";
-
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", // ✅ CSRF REMOVED FROM LOGIN
-        },
-        body: JSON.stringify(formData),
-        credentials: "include",
-      });
+      const res = isLogin
+        ? await loginApi(formData)
+        : await signupApi(formData);
 
-      const data = await response.json();
-      console.log(data);
+      const data = await res.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Network request failed.");
+      /* =========================
+       HANDLE ERRORS FIRST
+    ========================== */
+      if (!res.ok) {
+        // ✅ If backend says email not verified
+        if (data.needsVerification) {
+          navigate("/verify-email", {
+            state: { email: data.email },
+          });
+          return;
+        }
+
+        throw new Error(data.message || "Authentication failed");
       }
 
-      console.log("Success ✔️✔️");
-
+      /* =========================
+       SIGNUP SUCCESS
+    ========================== */
       if (!isLogin) {
-        setError("Registration successful! Please log in.");
-        setTimeout(() => handleToggle(), 1500);
-      } else {
-        // ✅ IMPORTANT: fetch CSRF AFTER login
-        await fetchCsrfToken();
+        navigate("/verify-email", {
+          state: { email: formData.email },
+        });
+        return;
+      }
 
-        // ✅ Redirect using navigate based on role
-        if (data.role === "teacher") {
-          navigate("/teacher/dashboard");
-        } else if (data.role === "student") {
-          navigate("/student/dashboard");
-        }
+      /* =========================
+       LOGIN SUCCESS
+    ========================== */
+      const meRes = await meApi();
+      if (!meRes.ok) throw new Error("Failed to hydrate session");
+
+      const meData = await meRes.json();
+
+      setUser(meData.user);
+      setCsrfToken(meData.csrfToken);
+
+      if (meData.user.role === "teacher") {
+        navigate("/teacher/dashboard", { replace: true });
+      } else {
+        navigate("/student/dashboard", { replace: true });
       }
     } catch (err) {
-      console.error("Error submitting form:", err.message);
+      console.error(err);
       setError(err.message);
     }
   };
 
   let extraFields = 0;
-  if (!isLogin) {
-    if (formData.role === "teacher") extraFields = 1;
-    else if (formData.role === "student") extraFields = 1;
-  }
-
+  if (!isLogin && formData.role) extraFields = 1;
   const formHeight = isLogin ? "350px" : `${580 + extraFields * 50}px`;
 
   return (
@@ -209,6 +207,7 @@ export default function AuthForm() {
                     value={formData.password}
                     onChange={handleChange("password")}
                   />
+
                   <InputField
                     label="Confirm Password"
                     type="password"

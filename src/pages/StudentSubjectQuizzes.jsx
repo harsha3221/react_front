@@ -4,10 +4,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../css/student-dashboard.css";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+
+import { fetchStudentSubjectQuizzesApi } from "../api/studentSubjectQuizzes.api";
+
 export default function StudentSubjectQuizzes() {
   const { subjectId } = useParams();
   const navigate = useNavigate();
   const { csrfToken } = useAuth();
+
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,14 +21,12 @@ export default function StudentSubjectQuizzes() {
   /* FETCH QUIZZES                                      */
   /* -------------------------------------------------- */
   useEffect(() => {
-    fetch(`http://localhost:3000/student/subject/${subjectId}/quizzes`, {
-      method: "GET",
-      credentials: "include",
-      headers: { "CSRF-Token": csrfToken },
-    })
+    fetchStudentSubjectQuizzesApi(subjectId, csrfToken)
       .then(async (res) => {
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.message || "Failed to fetch quizzes");
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to fetch quizzes");
+        }
         return data;
       })
       .then((data) => {
@@ -47,7 +49,8 @@ export default function StudentSubjectQuizzes() {
 
   if (loading)
     return <div className="student-dashboard">Loading quizzes...</div>;
-  if (error) return <div className="student-dashboard error">{error}</div>;
+  if (error)
+    return <div className="student-dashboard error">{error}</div>;
   if (quizzes.length === 0)
     return (
       <div className="student-dashboard">
@@ -73,9 +76,11 @@ export default function StudentSubjectQuizzes() {
 
   activeQuizzes.sort((a, b) => new Date(a.end_time) - new Date(b.end_time));
   upcomingQuizzes.sort(
-    (a, b) => new Date(a.start_time) - new Date(b.start_time)
+    (a, b) => new Date(a.start_time) - new Date(b.start_time),
   );
-  expiredQuizzes.sort((a, b) => new Date(b.end_time) - new Date(a.end_time));
+  expiredQuizzes.sort(
+    (a, b) => new Date(b.end_time) - new Date(a.end_time),
+  );
 
   /* -------------------------------------------------- */
   /* ACTION HANDLER                                     */
@@ -84,22 +89,18 @@ export default function StudentSubjectQuizzes() {
     const start = new Date(quiz.start_time);
     const end = new Date(quiz.end_time);
 
-    // ✅ RESULTS PUBLISHED
     if (quiz.results_published && quiz.submitted) {
       return navigate(`/student/quiz/${quiz.id}/result`);
     }
 
-    // Submitted but result not published
     if (quiz.submitted) {
       return navigate(`/student/quiz/${quiz.id}/submitted`);
     }
 
-    // Expired but attempted
     if (end < now && quiz.attempted && !quiz.submitted) {
       return navigate(`/student/quiz/${quiz.id}/submitted`);
     }
 
-    // Active quiz
     if (start <= now && end >= now) {
       return navigate(`/student/quiz/${quiz.id}/start`);
     }
@@ -115,8 +116,10 @@ export default function StudentSubjectQuizzes() {
     sec %= 3600;
     const mins = Math.floor(sec / 60);
     const seconds = sec % 60;
+
     if (hrs > 0)
       return `${hrs}h ${mins}m ${seconds < 10 ? "0" : ""}${seconds}s`;
+
     return `${mins}m ${seconds < 10 ? "0" : ""}${seconds}s`;
   };
 
@@ -137,7 +140,8 @@ export default function StudentSubjectQuizzes() {
               <h4>{q.title}</h4>
               <p>{q.description}</p>
               <p>
-                <strong>Ends:</strong> {new Date(q.end_time).toLocaleString()}
+                <strong>Ends:</strong>{" "}
+                {new Date(q.end_time).toLocaleString()}
               </p>
               <button className="join-btn" onClick={() => onQuizAction(q)}>
                 {q.attempted ? "Continue Quiz" : "Start Quiz"}
@@ -155,7 +159,9 @@ export default function StudentSubjectQuizzes() {
                 <strong>Starts:</strong>{" "}
                 {new Date(q.start_time).toLocaleString()}
               </p>
-              <p className="countdown">⏳ {formatCountdown(q.start_time)}</p>
+              <p className="countdown">
+                ⏳ {formatCountdown(q.start_time)}
+              </p>
               <button className="join-btn" disabled>
                 Starts Soon
               </button>
@@ -169,7 +175,8 @@ export default function StudentSubjectQuizzes() {
               <h4>{q.title}</h4>
               <p>{q.description}</p>
               <p>
-                <strong>Ended:</strong> {new Date(q.end_time).toLocaleString()}
+                <strong>Ended:</strong>{" "}
+                {new Date(q.end_time).toLocaleString()}
               </p>
 
               {q.results_published && q.submitted ? (

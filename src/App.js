@@ -1,7 +1,7 @@
-// src/App.js
 import { Routes, Route } from "react-router-dom";
-// import { useState } from "react";
-
+import { useAuth } from "./context/AuthContext";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AuthSkeleton from "./components/AuthSkeleton";
 import AuthForm from "./pages/login.jsx";
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
@@ -13,67 +13,119 @@ import StudentSubjectQuizzes from "./pages/StudentSubjectQuizzes.jsx";
 import StudentStartQuiz from "./pages/StudentStartQuiz.jsx";
 import StudentSubmitted from "./pages/StudentSubmitted.jsx";
 import TeacherQuizResults from "./pages/TeacherQuizResults.jsx";
-import StudentQuizResult from "./pages/StudentQuizResult.jsx"; // ✅ NEW
-
+import StudentQuizResult from "./pages/StudentQuizResult.jsx";
+import VerificationSuccess from "./pages/VerificationSuccess.jsx";
+import VerifyEmailRequired from "./pages/verifyEmailRequired.jsx"
+import VerificationFailed from "./pages/VerificationFailed.jsx";
 function App() {
+  const { loading } = useAuth();
 
-
-
+  if (loading) {
+    return <AuthSkeleton />;
+  }
 
   return (
-
     <Routes>
+      {/* PUBLIC */}
       <Route path="/" element={<AuthForm />} />
+      <Route path="/verify-email" element={<VerifyEmailRequired />} />
+      <Route path="/verification-success" element={<VerificationSuccess />} />
+      <Route path="/verification-failed" element={<VerificationFailed />} />
+
+
 
       {/* TEACHER */}
       <Route
         path="/teacher/dashboard"
-        element={<TeacherDashboard />}
+        element={
+          <ProtectedRoute role="teacher">
+            <TeacherDashboard />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/teacher/subjects/:subjectId/quizzes"
-        element={<QuizList />}
+        element={
+          <ProtectedRoute role="teacher">
+            <QuizList />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/teacher/subjects/:subjectId/quizzes/new"
-        element={<CreateQuiz />}
+        element={
+          <ProtectedRoute role="teacher">
+            <CreateQuiz />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/teacher/quiz/:quizId/questions"
-        element={<QuizQuestions />}
+        element={
+          <ProtectedRoute role="teacher">
+            <QuizQuestions />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/teacher/quiz/:quizId/results"
-        element={<TeacherQuizResults />}
+        element={
+          <ProtectedRoute role="teacher">
+            <TeacherQuizResults />
+          </ProtectedRoute>
+        }
       />
 
       {/* STUDENT */}
       <Route
         path="/student/dashboard"
-        element={<StudentDashboard />}
+        element={
+          <ProtectedRoute role="student">
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/student/available-courses"
-        element={<AvailableCourses />}
+        element={
+          <ProtectedRoute role="student">
+            <AvailableCourses />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/student/subject/:subjectId/quizzes"
-        element={<StudentSubjectQuizzes />}
+        element={
+          <ProtectedRoute role="student">
+            <StudentSubjectQuizzes />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/student/quiz/:quizId/start"
-        element={<StudentStartQuiz />}
+        element={
+          <ProtectedRoute role="student">
+            <StudentStartQuiz />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/student/quiz/:quizId/submitted"
-        element={<StudentSubmitted />}
+        element={
+          <ProtectedRoute role="student">
+            <StudentSubmitted />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/student/quiz/:quizId/result"
-        element={<StudentQuizResult />}
+        element={
+          <ProtectedRoute role="student">
+            <StudentQuizResult />
+          </ProtectedRoute>
+        }
       />
     </Routes>
-
   );
 }
 

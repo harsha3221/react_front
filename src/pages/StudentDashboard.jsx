@@ -2,22 +2,21 @@ import React, { useEffect, useState } from "react";
 import "../css/student-dashboard.css";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { fetchStudentDashboardApi } from "../api/student.api";
+
 export default function StudentDashboard() {
   const [student, setStudent] = useState(null);
-  // Renamed for clarity: we only fetch joined courses here
   const [joinedSubjects, setJoinedSubjects] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
-  const { csrfToken } = useAuth();
+
+  /* ---------------------------------- */
+  /* LOAD DASHBOARD                     */
+  /* ---------------------------------- */
   useEffect(() => {
-    // ⬅️ This route now only returns student profile and joined courses
-    fetch("http://localhost:3000/student/dashboard", {
-      method: "GET",
-      // headers: { "CSRF-Token": csrfToken },
-      credentials: "include",
-    })
+    fetchStudentDashboardApi()
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json();
@@ -27,7 +26,7 @@ export default function StudentDashboard() {
       })
       .then((data) => {
         setStudent(data.student);
-        setJoinedSubjects(data.joinedSubjects);
+        setJoinedSubjects(data.joinedSubjects || []);
         setLoading(false);
       })
       .catch((err) => {
@@ -36,6 +35,9 @@ export default function StudentDashboard() {
       });
   }, []);
 
+  /* ---------------------------------- */
+  /* LOADING STATE                      */
+  /* ---------------------------------- */
   if (loading) {
     return (
       <div className="student-dashboard">
@@ -44,9 +46,13 @@ export default function StudentDashboard() {
     );
   }
 
+  /* ---------------------------------- */
+  /* RENDER                             */
+  /* ---------------------------------- */
   return (
     <>
       <Navbar role="student" />
+
       <div className="student-dashboard-page">
         <div className="student-dashboard">
           <h1>Student Dashboard: My Registered Courses</h1>
@@ -63,6 +69,7 @@ export default function StudentDashboard() {
                   Courses You Are Currently Enrolled In ({joinedSubjects.length}
                   )
                 </h3>
+
                 {joinedSubjects.length > 0 ? (
                   joinedSubjects.map((sub) => (
                     <div
@@ -88,7 +95,7 @@ export default function StudentDashboard() {
                 ) : (
                   <p>
                     You haven’t registered for any courses yet. Check the
-                    **Available Courses** page to enroll.
+                    <strong> Available Courses </strong> page to enroll.
                   </p>
                 )}
               </section>

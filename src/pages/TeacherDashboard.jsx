@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import "../css/teacher-dashboard.css";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+
+import {
+  fetchTeacherDashboardApi,
+  createSubjectApi,
+} from "../api/teacherDashboard.api";
+
 export default function TeacherDashboard() {
   const [teacher, setTeacher] = useState(null);
   const [subjects, setSubjects] = useState([]);
@@ -14,13 +20,15 @@ export default function TeacherDashboard() {
     description: "",
   });
   const [error, setError] = useState("");
+
   const { csrfToken } = useAuth();
   const navigate = useNavigate();
 
+  /* -------------------------------------------------- */
+  /* LOAD DASHBOARD                                     */
+  /* -------------------------------------------------- */
   useEffect(() => {
-    fetch("http://localhost:3000/teacher/dashboard", {
-      credentials: "include",
-    })
+    fetchTeacherDashboardApi()
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json();
@@ -38,23 +46,28 @@ export default function TeacherDashboard() {
       });
   }, []);
 
+  /* -------------------------------------------------- */
+  /* FORM HANDLERS                                      */
+  /* -------------------------------------------------- */
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      code: "",
+      semester: "",
+      description: "",
+    });
+    setShowForm(false);
   };
 
   const handleCreateSubject = (e) => {
     e.preventDefault();
     setError("");
 
-    fetch("http://localhost:3000/teacher/create-subject", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken,
-      },
-      credentials: "include",
-      body: JSON.stringify(formData),
-    })
+    createSubjectApi(formData, csrfToken)
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json();
@@ -63,9 +76,8 @@ export default function TeacherDashboard() {
         return res.json();
       })
       .then((data) => {
-        setSubjects([...subjects, data.subject]);
-        setShowForm(false);
-        setFormData({ name: "", code: "", semester: "", description: "" });
+        setSubjects((prev) => [...prev, data.subject]);
+        resetForm();
       })
       .catch((err) => {
         console.error("Error creating subject:", err.message);
@@ -73,9 +85,12 @@ export default function TeacherDashboard() {
       });
   };
 
+  /* -------------------------------------------------- */
+  /* RENDER                                             */
+  /* -------------------------------------------------- */
   return (
     <>
-      <Navbar role="teacher"></Navbar>
+      <Navbar role="teacher" />
       <div className="teacher-dashboard">
         <h1>Teacher Dashboard</h1>
         {error && <p className="error">{error}</p>}
@@ -89,7 +104,7 @@ export default function TeacherDashboard() {
               <h3>Your Subjects</h3>
               <button
                 className="create-btn"
-                onClick={() => setShowForm(!showForm)}
+                onClick={() => setShowForm((v) => !v)}
               >
                 {showForm ? "Cancel" : "Create Subject"}
               </button>
@@ -131,7 +146,7 @@ export default function TeacherDashboard() {
                   <button
                     type="button"
                     className="cancel-btn"
-                    onClick={() => setShowForm(false)}
+                    onClick={resetForm}
                   >
                     Cancel
                   </button>

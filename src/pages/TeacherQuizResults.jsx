@@ -2,22 +2,30 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+
+import {
+  fetchQuizResultsApi,
+  publishQuizResultsApi,
+} from "../api/teacherQuizResults.api";
+
 export default function TeacherQuizResults() {
   const { quizId } = useParams();
   const { csrfToken } = useAuth();
+
   const [results, setResults] = useState([]);
   const [published, setPublished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [publishing, setPublishing] = useState(false); // ✅ NEW
+  const [publishing, setPublishing] = useState(false);
 
+  /* -------------------------------------------------- */
+  /* LOAD RESULTS                                       */
+  /* -------------------------------------------------- */
   const loadResults = () => {
     setLoading(true);
     setError("");
 
-    fetch(`http://localhost:3000/teacher/quiz/${quizId}/results`, {
-      credentials: "include",
-    })
+    fetchQuizResultsApi(quizId)
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -44,18 +52,11 @@ export default function TeacherQuizResults() {
   /* PUBLISH RESULTS (DOUBLE-CLICK SAFE)                */
   /* -------------------------------------------------- */
   const publishResults = async () => {
-    if (publishing) return; // ✅ guard
+    if (publishing) return;
     setPublishing(true);
 
     try {
-      const res = await fetch(
-        `http://localhost:3000/teacher/quiz/${quizId}/publish-results`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "X-CSRF-Token": csrfToken },
-        }
-      );
+      const res = await publishQuizResultsApi(quizId, csrfToken);
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -67,7 +68,7 @@ export default function TeacherQuizResults() {
     } catch (err) {
       alert(err.message);
     } finally {
-      setPublishing(false); // ✅ always reset
+      setPublishing(false);
     }
   };
 
@@ -106,7 +107,7 @@ export default function TeacherQuizResults() {
           <button
             className="btn-publish"
             onClick={publishResults}
-            disabled={publishing} // ✅ disable during request
+            disabled={publishing}
           >
             {publishing ? "Publishing..." : "📢 Publish Results to Students"}
           </button>
