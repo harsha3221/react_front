@@ -1,4 +1,4 @@
-// src/api/quizQuestions.api.js
+
 import { API_BASE } from "../config";
 
 /* ---------------------------------- */
@@ -20,6 +20,8 @@ export const createQuestionApi = (quizId, formData, csrfToken) => {
         credentials: "include",
         headers: {
             "CSRF-Token": csrfToken,
+            // ❌ DO NOT add Content-Type here
+            // browser will set multipart/form-data automatically
         },
         body: formData,
     });
@@ -32,7 +34,7 @@ export const updateQuestionApi = (
     quizId,
     questionId,
     formData,
-    csrfToken,
+    csrfToken
 ) => {
     return fetch(`${API_BASE}/quiz/${quizId}/questions/${questionId}`, {
         method: "PUT",

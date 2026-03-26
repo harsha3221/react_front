@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
@@ -21,7 +21,7 @@ export default function TeacherQuizResults() {
   /* -------------------------------------------------- */
   /* LOAD RESULTS                                       */
   /* -------------------------------------------------- */
-  const loadResults = () => {
+  const loadResults = useCallback(() => {
     setLoading(true);
     setError("");
 
@@ -42,11 +42,11 @@ export default function TeacherQuizResults() {
         setError(err.message);
         setLoading(false);
       });
-  };
+  }, [quizId]);
 
   useEffect(() => {
     loadResults();
-  }, [quizId]);
+  }, [loadResults]);
 
   /* -------------------------------------------------- */
   /* PUBLISH RESULTS (DOUBLE-CLICK SAFE)                */

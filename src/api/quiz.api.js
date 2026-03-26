@@ -36,3 +36,12 @@ export const fetchQuizzesBySubjectApi = (subjectId) => {
         credentials: "include",
     });
 };
+export const deleteQuizApi = (quizId, csrfToken) => {
+    return fetch(`${API_BASE}/quiz/${quizId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+            "CSRF-Token": csrfToken,
+        },
+    });
+};

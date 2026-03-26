@@ -20,7 +20,14 @@ export default function CreateQuiz() {
 
   const STORAGE_KEY = `create-quiz-draft-${subjectId}`;
 
-  /* LOAD SAVED DRAFT */
+  /* ---------------- HELPER ---------------- */
+  const getCurrentDateTimeLocal = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
+
+  /* ---------------- LOAD DRAFT ---------------- */
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -37,7 +44,7 @@ export default function CreateQuiz() {
     }
   }, [STORAGE_KEY]);
 
-  /* SAVE DRAFT */
+  /* ---------------- SAVE DRAFT ---------------- */
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -51,11 +58,35 @@ export default function CreateQuiz() {
     );
   }, [title, description, duration, startTime, endTime, STORAGE_KEY]);
 
-  /* SUBMIT */
+  /* ---------------- AUTO FIX END TIME ---------------- */
+  useEffect(() => {
+    if (startTime && endTime && new Date(endTime) <= new Date(startTime)) {
+      setEndTime("");
+    }
+  }, [startTime, endTime]);
+
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
+
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    /* 🔥 VALIDATIONS */
+    if (start < now) {
+      return setError("Start time cannot be in the past");
+    }
+
+    if (end <= start) {
+      return setError("End time must be after start time");
+    }
+
+    if (Number(duration) <= 0) {
+      return setError("Duration must be greater than 0");
+    }
 
     try {
       const res = await createQuizApi({
@@ -71,7 +102,6 @@ export default function CreateQuiz() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create quiz");
 
-      /* CLEAR DRAFT */
       localStorage.removeItem(STORAGE_KEY);
 
       setMessage("✅ Quiz created successfully!");
@@ -84,7 +114,7 @@ export default function CreateQuiz() {
     }
   };
 
-  /* RENDER */
+  /* ---------------- UI ---------------- */
   return (
     <div className="create-quiz-container">
       <h2>Create New Quiz</h2>
@@ -127,6 +157,7 @@ export default function CreateQuiz() {
           <input
             type="datetime-local"
             value={startTime}
+            min={getCurrentDateTimeLocal()} // 🔥 no past selection
             onChange={(e) => setStartTime(e.target.value)}
             required
           />
@@ -137,6 +168,7 @@ export default function CreateQuiz() {
           <input
             type="datetime-local"
             value={endTime}
+            min={startTime || getCurrentDateTimeLocal()} // 🔥 must be after start
             onChange={(e) => setEndTime(e.target.value)}
             required
           />

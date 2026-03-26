@@ -2,15 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "../css/quiz-list.css";
-import { fetchQuizzesBySubjectApi } from "../api/quiz.api";
-
+import { fetchQuizzesBySubjectApi, deleteQuizApi } from "../api/quiz.api";
+import { useAuth } from "../context/AuthContext";
 export default function QuizList() {
   const { subjectId } = useParams();
   const [quizzes, setQuizzes] = useState([]);
   const [subjectName, setSubjectName] = useState("");
   const [error, setError] = useState("");
   const [now, setNow] = useState(new Date()); // ⏱ live clock
-
+  const { csrfToken } = useAuth();
   /* ⏱ Update time every minute */
   useEffect(() => {
     const timer = setInterval(() => {
@@ -27,6 +27,27 @@ export default function QuizList() {
     if (end && now > end) return "completed";
     if (start && now >= start && (!end || now <= end)) return "active";
     return "draft";
+  };
+  const handleDelete = async (quizId) => {
+    const confirmDelete = window.confirm(
+      "⚠️ Are you sure you want to delete this quiz?\nThis action cannot be undone.",
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const res = await deleteQuizApi(quizId, csrfToken);
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to delete quiz");
+      }
+
+      // ✅ Remove from UI instantly
+      setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   /* LOAD QUIZZES */
@@ -92,12 +113,21 @@ export default function QuizList() {
 
                   <div className="quiz-actions">
                     {state === "draft" && (
-                      <Link
-                        to={`/teacher/quiz/${quiz.id}/questions`}
-                        className="btn-view"
-                      >
-                        View / Add Questions
-                      </Link>
+                      <>
+                        <Link
+                          to={`/teacher/quiz/${quiz.id}/questions`}
+                          className="btn-view"
+                        >
+                          View / Add Questions
+                        </Link>
+
+                        <button
+                          className="btn-delete"
+                          onClick={() => handleDelete(quiz.id)}
+                        >
+                          🗑 Delete
+                        </button>
+                      </>
                     )}
 
                     {state === "active" && (
