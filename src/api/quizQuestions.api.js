@@ -14,41 +14,30 @@ export const fetchQuizQuestionsApi = (quizId) => {
 /* ---------------------------------- */
 /* CREATE QUESTION                    */
 /* ---------------------------------- */
-export const createQuestionApi = (quizId, formData, csrfToken) => {
+export const createQuestionApi = (quizId, data, csrfToken) => {
     return fetch(`${API_BASE}/quiz/${quizId}/questions`, {
         method: "POST",
         credentials: "include",
         headers: {
+            "Content-Type": "application/json", // Use JSON now
             "CSRF-Token": csrfToken,
-            // ❌ DO NOT add Content-Type here
-            // browser will set multipart/form-data automatically
         },
-        body: formData,
+        body: JSON.stringify(data),
     });
 };
 
-/* ---------------------------------- */
-/* UPDATE QUESTION                    */
-/* ---------------------------------- */
-export const updateQuestionApi = (
-    quizId,
-    questionId,
-    formData,
-    csrfToken
-) => {
+export const updateQuestionApi = (quizId, questionId, data, csrfToken) => {
     return fetch(`${API_BASE}/quiz/${quizId}/questions/${questionId}`, {
         method: "PUT",
         credentials: "include",
         headers: {
+            "Content-Type": "application/json",
             "CSRF-Token": csrfToken,
         },
-        body: formData,
+        body: JSON.stringify(data),
     });
 };
 
-/* ---------------------------------- */
-/* DELETE QUESTION                    */
-/* ---------------------------------- */
 export const deleteQuestionApi = (quizId, questionId, csrfToken) => {
     return fetch(`${API_BASE}/quiz/${quizId}/questions/${questionId}`, {
         method: "DELETE",
