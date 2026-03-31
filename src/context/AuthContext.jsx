@@ -7,9 +7,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  
   /* HYDRATE SESSION ON APP LOAD           */
- 
+
   useEffect(() => {
     const hydrateAuth = async () => {
       try {
@@ -59,7 +58,6 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
 
 /* CUSTOM HOOK                           */
 

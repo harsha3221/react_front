@@ -49,3 +49,16 @@ export const submitStudentQuizApi = (quizId, csrfToken) => {
         },
     });
 };
+export const reportCheatingApi = (quizId, type, csrf) => {
+    return fetch("/api/report-cheating", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "CSRF-Token": csrf,
+        },
+        body: JSON.stringify({
+            quizId,
+            event_type: type,
+        }),
+    });
+};

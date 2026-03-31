@@ -2,7 +2,11 @@ import { Routes, Route } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AuthSkeleton from "./components/AuthSkeleton";
+
+/* PAGES */
 import AuthForm from "./pages/login.jsx";
+import Home from "./pages/home.jsx";
+
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import AvailableCourses from "./pages/AvailableCourses.jsx";
@@ -14,9 +18,11 @@ import StudentStartQuiz from "./pages/StudentStartQuiz.jsx";
 import StudentSubmitted from "./pages/StudentSubmitted.jsx";
 import TeacherQuizResults from "./pages/TeacherQuizResults.jsx";
 import StudentQuizResult from "./pages/StudentQuizResult.jsx";
+
 import VerificationSuccess from "./pages/VerificationSuccess.jsx";
-import VerifyEmailRequired from "./pages/verifyEmailRequired.jsx"
+import VerifyEmailRequired from "./pages/verifyEmailRequired.jsx";
 import VerificationFailed from "./pages/VerificationFailed.jsx";
+
 function App() {
   const { loading } = useAuth();
 
@@ -26,15 +32,28 @@ function App() {
 
   return (
     <Routes>
-      {/* PUBLIC */}
-      <Route path="/" element={<AuthForm />} />
+
+      {/* =========================
+         PUBLIC ROUTES
+      ========================= */}
+
+      {/* ✅ HOME PAGE */}
+      <Route path="/" element={<Home />} />
+
+      {/* ✅ LOGIN / SIGNUP */}
+      <Route path="/login" element={<AuthForm />} />
+
+      {/* EMAIL VERIFICATION */}
       <Route path="/verify-email" element={<VerifyEmailRequired />} />
       <Route path="/verification-success" element={<VerificationSuccess />} />
       <Route path="/verification-failed" element={<VerificationFailed />} />
 
 
 
-      {/* TEACHER */}
+      {/* =========================
+         TEACHER ROUTES
+      ========================= */}
+
       <Route
         path="/teacher/dashboard"
         element={
@@ -43,6 +62,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/teacher/subjects/:subjectId/quizzes"
         element={
@@ -51,6 +71,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/teacher/subjects/:subjectId/quizzes/new"
         element={
@@ -59,6 +80,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/teacher/quiz/:quizId/questions"
         element={
@@ -67,6 +89,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/teacher/quiz/:quizId/results"
         element={
@@ -76,7 +99,12 @@ function App() {
         }
       />
 
-      {/* STUDENT */}
+
+
+      {/* =========================
+         STUDENT ROUTES
+      ========================= */}
+
       <Route
         path="/student/dashboard"
         element={
@@ -85,6 +113,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/student/available-courses"
         element={
@@ -93,6 +122,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/student/subject/:subjectId/quizzes"
         element={
@@ -101,6 +131,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/student/quiz/:quizId/start"
         element={
@@ -109,6 +140,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/student/quiz/:quizId/submitted"
         element={
@@ -117,6 +149,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/student/quiz/:quizId/result"
         element={
@@ -125,6 +158,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
     </Routes>
   );
 }

@@ -160,3 +160,27 @@
     width: 100%;
   }
 }
+/* Question image */
+.question-image-wrapper {
+  margin: 10px 0;
+}
+
+.question-image {
+  max-width: 250px;
+  border-radius: 8px;
+}
+
+/* Option layout */
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+/* Option image */
+.option-image {
+  width: 60px;
+  height: auto;
+  border-radius: 6px;
+}

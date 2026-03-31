@@ -7,12 +7,12 @@ import {
   startStudentQuizApi,
   saveStudentAnswerApi,
   submitStudentQuizApi,
+  reportCheatingApi,
 } from "../api/studentQuizStart.api";
 
 /* -------------------------------------------------- */
 /* HELPERS                                            */
 /* -------------------------------------------------- */
-const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
 export default function StudentStartQuiz() {
   const { quizId } = useParams();
@@ -55,35 +55,53 @@ export default function StudentStartQuiz() {
       try {
         const res = await startStudentQuizApi(quizId, csrfToken);
         const data = await res.json();
+        console.log("FULL API RESPONSE:", data);
+        console.log("QUESTIONS:", data.questions);
 
         if (!res.ok) throw new Error(data.message);
 
+        // 1. Check if already submitted
         if (data.attempt?.submitted) {
           navigate(`/student/quiz/${quizId}/submitted`, { replace: true });
           return;
         }
 
-        const randomizedQuestions = shuffle(
-          (data.questions || []).map((q) => ({
-            ...q,
-            options: shuffle(q.options || []),
-          })),
-        );
-
+        // 2. Set Quiz Info
         setQuiz(data.quiz);
-        setQuestions(randomizedQuestions);
 
-        const map = {};
-        (data.existingAnswers || []).forEach((a) => {
-          if (!map[a.question_id]) map[a.question_id] = [];
-          map[a.question_id].push(a.option_id);
-        });
-        setAnswers(map);
+        // 3. Set Questions (Ensure options exist)
+        const rawQuestions = data.questions || [];
+        setQuestions(rawQuestions);
 
-        const startedAt = new Date(data.attempt.started_at).getTime();
-        const durationMs = data.quiz.duration_minutes * 60 * 1000;
-        setTimeLeft(Math.max(0, startedAt + durationMs - Date.now()));
+        // 4. Map Existing Answers correctly
+        // We use a temp object to avoid multiple re-renders
+        const savedAnswersMap = {};
+
+        if (data.existingAnswers && Array.isArray(data.existingAnswers)) {
+          data.existingAnswers.forEach((ans) => {
+            const qId = ans.question_id;
+            const oId = ans.option_id;
+
+            if (!savedAnswersMap[qId]) {
+              savedAnswersMap[qId] = [];
+            }
+            // Ensure we don't push duplicates and keep IDs consistent (Numbers)
+            if (!savedAnswersMap[qId].includes(oId)) {
+              savedAnswersMap[qId].push(oId);
+            }
+          });
+        }
+        setAnswers(savedAnswersMap);
+
+        // 5. Timer Logic
+        if (data.attempt?.started_at && data.quiz?.duration_minutes) {
+          const startedAt = new Date(data.attempt.started_at).getTime();
+          const durationMs = data.quiz.duration_minutes * 60 * 1000;
+          const remaining = startedAt + durationMs - Date.now();
+          setTimeLeft(Math.max(0, remaining));
+        }
       } catch (err) {
+        console.error("Quiz Load Error:", err);
         setError(err.message || "Failed to load quiz");
       } finally {
         setLoading(false);
@@ -92,7 +110,6 @@ export default function StudentStartQuiz() {
 
     load();
   }, [quizId, csrfToken, navigate]);
-
   /* -------------------------------------------------- */
   /* TIMER                                              */
   /* -------------------------------------------------- */
@@ -119,21 +136,20 @@ export default function StudentStartQuiz() {
   useEffect(() => {
     const onVis = () => {
       if (document.hidden) {
+        reportCheatingApi(quizId, "tab_switch", csrfToken);
+
         if (!warnedOnceRef.current) {
           warnedOnceRef.current = true;
-          alert("Return in 5 seconds or quiz will submit");
-          hiddenTimerRef.current = setTimeout(handleSubmit, 5000);
-        } else {
-          handleSubmit();
+          alert("Warning sent to teacher!");
         }
-      } else if (hiddenTimerRef.current) {
-        clearTimeout(hiddenTimerRef.current);
+
+        // ❌ REMOVE AUTO SUBMIT
       }
     };
 
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
-  }, [handleSubmit]);
+  }, [quizId, csrfToken]);
 
   /* -------------------------------------------------- */
   /* NETWORK DISCONNECT                                  */
@@ -182,6 +198,7 @@ export default function StudentStartQuiz() {
   return (
     <div className="student-quiz-page neon-bg">
       <h2>{quiz.title}</h2>
+
       <div className="quiz-timer">⏱ {formatTime(timeLeft)}</div>
 
       {questions.map((q, i) => (
@@ -190,6 +207,19 @@ export default function StudentStartQuiz() {
             Q{i + 1}. {q.question_text}
           </h4>
 
+          {/* ✅ QUESTION IMAGE */}
+          {q.image_url && (
+            <div className="question-image-wrapper">
+              <img
+                src={q.image_url}
+                alt="question"
+                className="question-image"
+                loading="lazy"
+              />
+            </div>
+          )}
+
+          {/* OPTIONS */}
           {q.options.map((opt) => (
             <label key={opt.id} className="option">
               <input
@@ -197,7 +227,19 @@ export default function StudentStartQuiz() {
                 checked={(answers[q.id] || []).includes(opt.id)}
                 onChange={() => toggleOption(q.id, opt.id)}
               />
-              {opt.option_text}
+
+              {/* TEXT */}
+              <span>{opt.option_text}</span>
+
+              {/* ✅ OPTION IMAGE */}
+              {opt.image_url && (
+                <img
+                  src={opt.image_url}
+                  alt="option"
+                  className="option-image"
+                  loading="lazy"
+                />
+              )}
             </label>
           ))}
         </div>

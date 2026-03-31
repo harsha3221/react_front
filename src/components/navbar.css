@@ -1,7 +1,22 @@
 /* =========================
    NAVBAR – QUIZ PLATFORM
    ========================= */
+/* LOGIN BUTTON (NEW) */
+.login-btn {
+  background: #4361ee;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
 
+.login-btn:hover {
+  background: #364fc7;
+}
 .navbar {
   height: 64px;
   background: #eef2f7;
@@ -92,7 +107,9 @@
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
-  transition: background 160ms var(--ease), border-color 160ms var(--ease),
+  transition:
+    background 160ms var(--ease),
+    border-color 160ms var(--ease),
     color 160ms var(--ease);
 }
 
