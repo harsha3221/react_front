@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import "../css/student-quiz.css";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,15 +10,17 @@ import {
   submitStudentQuizApi,
   reportCheatingApi,
 } from "../api/studentQuizStart.api";
-
-/* -------------------------------------------------- */
-/* HELPERS                                            */
-/* -------------------------------------------------- */
+import { API_BASE } from "../config";
+// Initialize Socket with credentials to pick up the Express Session cookie
+const socket = io(`${API_BASE}`, {
+  transports: ["websocket"],
+  withCredentials: true,
+});
 
 export default function StudentStartQuiz() {
   const { quizId } = useParams();
   const navigate = useNavigate();
-  const { csrfToken } = useAuth();
+  const { csrfToken, user } = useAuth();
 
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -28,11 +31,20 @@ export default function StudentStartQuiz() {
 
   const intervalRef = useRef(null);
   const warnedOnceRef = useRef(false);
-  const hiddenTimerRef = useRef(null);
   const isSubmittingRef = useRef(false);
 
   /* -------------------------------------------------- */
-  /* SUBMIT (SAFE AGAINST DOUBLE CALLS)                  */
+  /* AUTH & ROLE GUARD                                  */
+  /* -------------------------------------------------- */
+  useEffect(() => {
+    if (!loading && user && user.role !== "student") {
+      alert("Access Denied: This area is for students only.");
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
+
+  /* -------------------------------------------------- */
+  /* SUBMIT LOGIC                                       */
   /* -------------------------------------------------- */
   const handleSubmit = useCallback(async () => {
     if (isSubmittingRef.current) return;
@@ -41,59 +53,44 @@ export default function StudentStartQuiz() {
     try {
       await submitStudentQuizApi(quizId, csrfToken);
       navigate(`/student/quiz/${quizId}/submitted`, { replace: true });
-    } catch {
-      alert("Submit failed. Please contact instructor.");
+    } catch (err) {
+      alert("Submit failed. Please contact your instructor immediately.");
       isSubmittingRef.current = false;
     }
   }, [quizId, csrfToken, navigate]);
 
   /* -------------------------------------------------- */
-  /* LOAD QUIZ                                          */
+  /* DATA FETCHING                                      */
   /* -------------------------------------------------- */
   useEffect(() => {
     const load = async () => {
       try {
         const res = await startStudentQuizApi(quizId, csrfToken);
         const data = await res.json();
-        console.log("FULL API RESPONSE:", data);
-        console.log("QUESTIONS:", data.questions);
 
         if (!res.ok) throw new Error(data.message);
-
-        // 1. Check if already submitted
         if (data.attempt?.submitted) {
           navigate(`/student/quiz/${quizId}/submitted`, { replace: true });
           return;
         }
 
-        // 2. Set Quiz Info
         setQuiz(data.quiz);
+        setQuestions(data.questions || []);
 
-        // 3. Set Questions (Ensure options exist)
-        const rawQuestions = data.questions || [];
-        setQuestions(rawQuestions);
-
-        // 4. Map Existing Answers correctly
-        // We use a temp object to avoid multiple re-renders
+        // Sync existing progress
         const savedAnswersMap = {};
-
         if (data.existingAnswers && Array.isArray(data.existingAnswers)) {
           data.existingAnswers.forEach((ans) => {
-            const qId = ans.question_id;
-            const oId = ans.option_id;
-
-            if (!savedAnswersMap[qId]) {
-              savedAnswersMap[qId] = [];
-            }
-            // Ensure we don't push duplicates and keep IDs consistent (Numbers)
-            if (!savedAnswersMap[qId].includes(oId)) {
-              savedAnswersMap[qId].push(oId);
+            if (!savedAnswersMap[ans.question_id])
+              savedAnswersMap[ans.question_id] = [];
+            if (!savedAnswersMap[ans.question_id].includes(ans.option_id)) {
+              savedAnswersMap[ans.question_id].push(ans.option_id);
             }
           });
         }
         setAnswers(savedAnswersMap);
 
-        // 5. Timer Logic
+        // Timer Sync
         if (data.attempt?.started_at && data.quiz?.duration_minutes) {
           const startedAt = new Date(data.attempt.started_at).getTime();
           const durationMs = data.quiz.duration_minutes * 60 * 1000;
@@ -101,8 +98,7 @@ export default function StudentStartQuiz() {
           setTimeLeft(Math.max(0, remaining));
         }
       } catch (err) {
-        console.error("Quiz Load Error:", err);
-        setError(err.message || "Failed to load quiz");
+        setError(err.message || "Failed to initialize quiz environment.");
       } finally {
         setLoading(false);
       }
@@ -110,11 +106,12 @@ export default function StudentStartQuiz() {
 
     load();
   }, [quizId, csrfToken, navigate]);
+
   /* -------------------------------------------------- */
-  /* TIMER                                              */
+  /* TIMER ENGINE                                       */
   /* -------------------------------------------------- */
   useEffect(() => {
-    if (timeLeft == null) return;
+    if (timeLeft === null || timeLeft <= 0) return;
 
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
@@ -131,32 +128,66 @@ export default function StudentStartQuiz() {
   }, [timeLeft, handleSubmit]);
 
   /* -------------------------------------------------- */
-  /* TAB SWITCH / VISIBILITY                             */
+  /* TOP-NOTCH PROCTORING & SOCKET EVENTS               */
   /* -------------------------------------------------- */
   useEffect(() => {
-    const onVis = () => {
-      if (document.hidden) {
-        reportCheatingApi(quizId, "tab_switch", csrfToken);
+    if (!user || user.role !== "student") return;
 
+    const reportIncident = (type) => {
+      console.warn(`[Proctor] Incident Logged: ${type} for ${user.name}`);
+      // Real-time notification to teacher via WebSocket
+      socket.emit("student_incident", { quizId, event_type: type });
+      // Persistent log via API
+      reportCheatingApi(quizId, type, csrfToken);
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        reportIncident("tab_switch");
         if (!warnedOnceRef.current) {
           warnedOnceRef.current = true;
-          alert("Warning sent to teacher!");
+          alert(
+            "SECURITY WARNING: Tab switching is monitored. Your instructor has been notified.",
+          );
         }
-
-        // ❌ REMOVE AUTO SUBMIT
       }
     };
 
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
-  }, [quizId, csrfToken]);
+    const handleBlur = () => reportIncident("window_blur");
+
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      reportIncident("right_click_attempt");
+    };
+
+    // Listen for Teacher Commands (e.g., Force Submission)
+    socket.on("force_submit", (data) => {
+      if (String(data.quizId) === String(quizId)) {
+        alert("Your session has been terminated by the instructor.");
+        handleSubmit();
+      }
+    });
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("contextmenu", handleContextMenu);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("contextmenu", handleContextMenu);
+      socket.off("force_submit");
+    };
+  }, [quizId, csrfToken, handleSubmit, user]);
 
   /* -------------------------------------------------- */
-  /* NETWORK DISCONNECT                                  */
+  /* NETWORK RESILIENCE                                 */
   /* -------------------------------------------------- */
   useEffect(() => {
     const onOffline = () => {
-      alert("Network disconnected. Quiz submitted.");
+      alert(
+        "Network Connection Lost. Progress saved. Auto-submitting for security.",
+      );
       handleSubmit();
     };
 
@@ -165,7 +196,7 @@ export default function StudentStartQuiz() {
   }, [handleSubmit]);
 
   /* -------------------------------------------------- */
-  /* SAVE ANSWERS                                       */
+  /* ANSWER INTERACTION                                 */
   /* -------------------------------------------------- */
   const toggleOption = (qid, oid) => {
     setAnswers((prev) => {
@@ -174,19 +205,18 @@ export default function StudentStartQuiz() {
         ? cur.filter((x) => x !== oid)
         : [...cur, oid];
 
-      saveStudentAnswerApi(quizId, qid, updated, csrfToken).catch(() =>
-        console.error("Failed to save answer"),
-      );
+      // Background save to prevent data loss on crash
+      saveStudentAnswerApi(quizId, qid, updated, csrfToken).catch(() => {
+        console.error("Critical: Failed to auto-save progress.");
+      });
 
       return { ...prev, [qid]: updated };
     });
   };
 
-  /* -------------------------------------------------- */
-  /* RENDER                                             */
-  /* -------------------------------------------------- */
-  if (loading) return <div>Loading quiz…</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (loading)
+    return <div className="loading-screen">Encrypting Quiz Session...</div>;
+  if (error) return <div className="error-screen">Error: {error}</div>;
 
   const formatTime = (ms) => {
     const s = Math.floor(ms / 1000) % 60;
@@ -197,61 +227,74 @@ export default function StudentStartQuiz() {
 
   return (
     <div className="student-quiz-page neon-bg">
-      <h2>{quiz.title}</h2>
+      <header className="quiz-header">
+        <div className="quiz-meta">
+          <h2>{quiz?.title}</h2>
+          <span className="student-tag">User: {user?.name}</span>
+        </div>
+        <div
+          className={`quiz-timer ${timeLeft < 60000 ? "timer-critical" : ""}`}
+        >
+          ⏱ {formatTime(timeLeft)}
+        </div>
+      </header>
 
-      <div className="quiz-timer">⏱ {formatTime(timeLeft)}</div>
+      <main className="questions-container">
+        {questions.map((q, i) => (
+          <section key={q.id} className="question-card">
+            <h4 className="question-text">
+              <span className="q-number">Q{i + 1}.</span> {q.question_text}
+            </h4>
 
-      {questions.map((q, i) => (
-        <div key={q.id} className="question-card">
-          <h4>
-            Q{i + 1}. {q.question_text}
-          </h4>
-
-          {/* ✅ QUESTION IMAGE */}
-          {q.image_url && (
-            <div className="question-image-wrapper">
-              <img
-                src={q.image_url}
-                alt="question"
-                className="question-image"
-                loading="lazy"
-              />
-            </div>
-          )}
-
-          {/* OPTIONS */}
-          {q.options.map((opt) => (
-            <label key={opt.id} className="option">
-              <input
-                type="checkbox"
-                checked={(answers[q.id] || []).includes(opt.id)}
-                onChange={() => toggleOption(q.id, opt.id)}
-              />
-
-              {/* TEXT */}
-              <span>{opt.option_text}</span>
-
-              {/* ✅ OPTION IMAGE */}
-              {opt.image_url && (
+            {q.image_url && (
+              <div className="question-image-wrapper">
                 <img
-                  src={opt.image_url}
-                  alt="option"
-                  className="option-image"
+                  src={q.image_url}
+                  alt="Question Context"
+                  className="question-image"
                   loading="lazy"
                 />
-              )}
-            </label>
-          ))}
-        </div>
-      ))}
+              </div>
+            )}
 
-      <button
-        className="btn-submit"
-        onClick={handleSubmit}
-        disabled={isSubmittingRef.current}
-      >
-        Submit Quiz
-      </button>
+            <div className="options-grid">
+              {q.options.map((opt) => (
+                <label
+                  key={opt.id}
+                  className={`option-label ${(answers[q.id] || []).includes(opt.id) ? "selected" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    className="hidden-checkbox"
+                    checked={(answers[q.id] || []).includes(opt.id)}
+                    onChange={() => toggleOption(q.id, opt.id)}
+                  />
+                  <div className="option-content">
+                    <span className="option-text">{opt.option_text}</span>
+                    {opt.image_url && (
+                      <img
+                        src={opt.image_url}
+                        alt="Option Visual"
+                        className="option-image"
+                      />
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+          </section>
+        ))}
+      </main>
+
+      <footer className="quiz-footer">
+        <button
+          className="btn-submit"
+          onClick={handleSubmit}
+          disabled={isSubmittingRef.current}
+        >
+          {isSubmittingRef.current ? "Finalizing..." : "Submit Quiz"}
+        </button>
+      </footer>
     </div>
   );
 }

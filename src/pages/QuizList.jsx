@@ -131,21 +131,39 @@ export default function QuizList() {
                     )}
 
                     {state === "active" && (
-                      <Link
-                        to={`/teacher/quiz/${quiz.id}/questions`}
-                        className="btn-view"
-                      >
-                        View Questions
-                      </Link>
+                      <>
+                        <Link
+                          to={`/teacher/quiz/${quiz.id}/questions`}
+                          className="btn-view"
+                        >
+                          View Questions
+                        </Link>
+
+                        <Link
+                          to={`/teacher/monitoring/${quiz.id}`}
+                          className="btn-monitor"
+                        >
+                          🔴 Live Monitoring
+                        </Link>
+                      </>
                     )}
 
                     {state === "completed" && (
-                      <Link
-                        to={`/teacher/quiz/${quiz.id}/results`}
-                        className="btn-view"
-                      >
-                        View Results
-                      </Link>
+                      <>
+                        <Link
+                          to={`/teacher/quiz/${quiz.id}/results`}
+                          className="btn-view"
+                        >
+                          View Results
+                        </Link>
+
+                        <Link
+                          to={`/teacher/monitoring/${quiz.id}`}
+                          className="btn-monitor"
+                        >
+                          📊 View Monitoring
+                        </Link>
+                      </>
                     )}
                   </div>
                 </li>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-
+import { API_BASE } from "../config";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const hydrateAuth = async () => {
       try {
-        const res = await fetch("http://localhost:3000/me", {
+        const res = await fetch(`${API_BASE}/me`, {
           credentials: "include",
         });
 

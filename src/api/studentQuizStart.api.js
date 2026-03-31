@@ -50,8 +50,9 @@ export const submitStudentQuizApi = (quizId, csrfToken) => {
     });
 };
 export const reportCheatingApi = (quizId, type, csrf) => {
-    return fetch("/api/report-cheating", {
+    return fetch(`${API_BASE}/api/report-cheating`, {
         method: "POST",
+        credentials: "include", // ✅ MUST
         headers: {
             "Content-Type": "application/json",
             "CSRF-Token": csrf,

@@ -2,13 +2,14 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./navbar.css";
+import { API_BASE } from "../config";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
   const logout = async () => {
-    await fetch("http://localhost:3000/logout", {
+    await fetch(`${API_BASE}/logout`, {
       method: "POST",
       credentials: "include",
     });

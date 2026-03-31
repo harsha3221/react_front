@@ -6,7 +6,7 @@ import AuthSkeleton from "./components/AuthSkeleton";
 /* PAGES */
 import AuthForm from "./pages/login.jsx";
 import Home from "./pages/home.jsx";
-
+import TeacherMonitoring from "./pages/TeacherMonitoring.jsx";
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import AvailableCourses from "./pages/AvailableCourses.jsx";
@@ -18,6 +18,7 @@ import StudentStartQuiz from "./pages/StudentStartQuiz.jsx";
 import StudentSubmitted from "./pages/StudentSubmitted.jsx";
 import TeacherQuizResults from "./pages/TeacherQuizResults.jsx";
 import StudentQuizResult from "./pages/StudentQuizResult.jsx";
+
 
 import VerificationSuccess from "./pages/VerificationSuccess.jsx";
 import VerifyEmailRequired from "./pages/verifyEmailRequired.jsx";
@@ -59,6 +60,14 @@ function App() {
         element={
           <ProtectedRoute role="teacher">
             <TeacherDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/monitoring/:quizId"
+        element={
+          <ProtectedRoute role="teacher">
+            <TeacherMonitoring />
           </ProtectedRoute>
         }
       />
