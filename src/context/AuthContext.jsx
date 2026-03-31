@@ -16,14 +16,12 @@ export function AuthProvider({ children }) {
           credentials: "include",
         });
 
-        /* ✅ EXPECTED CASE: NOT LOGGED IN */
         if (res.status === 401) {
           setUser(null);
           setCsrfToken("");
           return;
         }
 
-        /* ❌ UNEXPECTED ERROR */
         if (!res.ok) {
           throw new Error("Unexpected auth error");
         }
