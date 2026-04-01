@@ -1,2 +1,1 @@
-export const API_BASE =
-    process.env.REACT_APP_API_BASE || "http://localhost:3000";
+export const API_BASE = "https://quizify-backend-zv00.onrender.com";
