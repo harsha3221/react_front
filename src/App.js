@@ -19,7 +19,7 @@ import StudentSubmitted from "./pages/StudentSubmitted.jsx";
 import TeacherQuizResults from "./pages/TeacherQuizResults.jsx";
 import StudentQuizResult from "./pages/StudentQuizResult.jsx";
 
-
+import VerifyEmail from "./pages/VerifyEmail";
 import VerificationSuccess from "./pages/VerificationSuccess.jsx";
 import VerifyEmailRequired from "./pages/verifyEmailRequired.jsx";
 import VerificationFailed from "./pages/VerificationFailed.jsx";
@@ -45,6 +45,7 @@ function App() {
       <Route path="/login" element={<AuthForm />} />
 
       {/* EMAIL VERIFICATION */}
+      <Route path="/verify" element={<VerifyEmail />} />
       <Route path="/verify-email" element={<VerifyEmailRequired />} />
       <Route path="/verification-success" element={<VerificationSuccess />} />
       <Route path="/verification-failed" element={<VerificationFailed />} />
