@@ -65,18 +65,26 @@ export default function CreateQuiz() {
     }
   }, [startTime, endTime]);
 
+  /* SUBMIT*/
   /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
 
-    const now = new Date();
+    // Create real Date objects from the input strings
     const start = new Date(startTime);
     const end = new Date(endTime);
+    const now = new Date();
 
-    /* 🔥 VALIDATIONS */
-    if (start < now) {
+    // 🔥 Tiny edge case fix: 60-second grace period
+    // Allows for network lag or a few seconds of user delay
+    const gracePeriod = 60 * 1000;
+
+    /* ---------------- VALIDATIONS ---------------- */
+
+    // Check if start time is significantly in the past
+    if (start.getTime() < now.getTime() - gracePeriod) {
       return setError("Start time cannot be in the past");
     }
 
@@ -94,14 +102,16 @@ export default function CreateQuiz() {
         title,
         description,
         duration,
-        startTime,
-        endTime,
+        // 🔥 Convert to ISO format before sending to Backend (UTC)
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
         csrfToken,
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create quiz");
 
+      // Clear draft after successful creation
       localStorage.removeItem(STORAGE_KEY);
 
       setMessage("✅ Quiz created successfully!");
@@ -113,7 +123,6 @@ export default function CreateQuiz() {
       setError(err.message);
     }
   };
-
   /* ---------------- UI ---------------- */
   return (
     <div className="create-quiz-container">

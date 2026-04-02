@@ -99,22 +99,25 @@ export default function QuizQuestions() {
   );
 
   /* ---------------- DATA FETCHING ---------------- */
-  const fetchQuestions = useCallback(() => {
-    setLoading(true);
-    fetchQuizQuestionsApi(quizId)
-      .then((res) => res.json())
-      .then((data) => {
-        setQuestions(data.questions || []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fetch error:", err.message);
-        setLoading(false);
-      });
-  }, [quizId]);
+  const fetchQuestions = useCallback(
+    (isInitialLoad = false) => {
+      if (isInitialLoad) setLoading(true); // Only show big loader on first visit
+
+      fetchQuizQuestionsApi(quizId)
+        .then((res) => res.json())
+        .then((data) => {
+          setQuestions(data.questions || []);
+        })
+        .catch((err) => console.error("Fetch error:", err.message))
+        .finally(() => {
+          if (isInitialLoad) setLoading(false);
+        });
+    },
+    [quizId],
+  );
 
   useEffect(() => {
-    fetchQuestions();
+    fetchQuestions(true); // Initial load triggers the loader
   }, [fetchQuestions]);
 
   /* ---------------- ACTIONS ---------------- */
@@ -161,8 +164,9 @@ export default function QuizQuestions() {
     setSaving(true);
 
     try {
+      // 1. Determine if we keep old image or upload new one
       let finalQuestionImageUrl = editMode
-        ? questions.find((q) => q.id === editQuestionId)?.image_url
+        ? questions.find((q) => q.id === editQuestionId)?.image_url || null
         : null;
 
       if (questionImage) {
@@ -172,6 +176,7 @@ export default function QuizQuestions() {
         );
       }
 
+      // 2. Handle Options Images
       const updatedOptions = await Promise.all(
         options.map(async (opt) => {
           let url = opt.image_url || null;
@@ -194,34 +199,37 @@ export default function QuizQuestions() {
         options: updatedOptions,
       };
 
+      // 3. API Call
       const res = editMode
         ? await updateQuestionApi(quizId, editQuestionId, payload, csrfToken)
         : await createQuestionApi(quizId, payload, csrfToken);
 
       if (!res.ok) throw new Error("Failed to save data to server");
 
+      // 4. Success - Reset UI and Refresh Background
       resetForm();
-      fetchQuestions();
+      fetchQuestions(false); // 🔥 Background refresh: NO page reload/flicker
     } catch (err) {
       alert(err.message);
     } finally {
       setSaving(false);
     }
   };
-
   const handleDeleteQuestion = async (questionId) => {
     if (!window.confirm("Are you sure you want to delete this question?"))
       return;
 
-    setDeletingId(questionId); // Start loading for this specific ID
+    setDeletingId(questionId);
     try {
       const res = await deleteQuestionApi(quizId, questionId, csrfToken);
       if (!res.ok) throw new Error("Failed to delete question");
-      fetchQuestions();
+
+      // Refresh list in background
+      fetchQuestions(false); // 🔥 Background refresh: NO page reload/flicker
     } catch (err) {
       alert(err.message);
     } finally {
-      setDeletingId(null); // Clear loading state
+      setDeletingId(null);
     }
   };
 
