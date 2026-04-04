@@ -3,9 +3,10 @@ import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { API_BASE } from "../config";
 
+// Initialize Socket outside to prevent multiple connections on re-render
 const socket = io(`${API_BASE}`, {
   transports: ["websocket"],
-  withCredentials: true, // Required for session-based room assignment
+  withCredentials: true,
 });
 
 export default function TeacherMonitoring() {
@@ -32,14 +33,14 @@ export default function TeacherMonitoring() {
 
     // 2. LIVE LISTEN
     const onAlert = (data) => {
-      // Ensure the live alert matches the quiz the teacher is currently viewing
+      console.log("📨 Real-time alert received:", data);
+      // Consistent string comparison for IDs
       if (String(data.quizId) === String(quizId)) {
         setAlerts((prev) => [data, ...prev]);
 
-        // Browser notification or Sound alert
         if (Notification.permission === "granted") {
           new Notification(`Cheating Alert: ${data.studentName}`, {
-            body: `Action: ${data.event_type}`,
+            body: `Action: ${data.event_type.replace("_", " ")}`,
           });
         }
       }
@@ -47,37 +48,60 @@ export default function TeacherMonitoring() {
 
     socket.on("cheating_alert", onAlert);
 
+    // Log connection status for debugging
+    socket.on("connect", () => console.log("✅ Teacher Socket Connected"));
+
     return () => {
       socket.off("cheating_alert", onAlert);
+      socket.off("connect");
     };
   }, [quizId]);
 
   return (
     <div className="monitoring-container">
-      <header className="mon-header">
+      <header
+        className="mon-header"
+        style={{ padding: "20px", borderBottom: "1px solid #ccc" }}
+      >
         <h2>🔴 Live Proctoring Dashboard</h2>
         <p>
           Monitoring Quiz ID: <strong>{quizId}</strong>
         </p>
       </header>
 
-      <div className="alerts-list">
+      <div className="alerts-list" style={{ padding: "20px" }}>
         {alerts.length === 0 ? (
           <div className="no-alerts">
             No incidents recorded for this session.
           </div>
         ) : (
           alerts.map((a, i) => (
-            <div key={i} className={`alert-card ${i === 0 ? "new-anim" : ""}`}>
+            <div
+              key={i}
+              className="alert-card"
+              style={{
+                border: "1px solid red",
+                margin: "10px 0",
+                padding: "15px",
+                borderRadius: "8px",
+                backgroundColor: i === 0 ? "#fff0f0" : "#fff",
+              }}
+            >
               <div className="alert-user">
-                <span className="user-name">{a.studentName}</span>
-                <span className="user-email">{a.studentEmail}</span>
+                <strong style={{ display: "block" }}>{a.studentName}</strong>
+                <small>{a.studentEmail}</small>
               </div>
-              <div className="alert-details">
-                <span className={`event-badge ${a.event_type}`}>
-                  {a.event_type.replace("_", " ")}
+              <div className="alert-details" style={{ marginTop: "10px" }}>
+                <span
+                  className="event-badge"
+                  style={{ color: "red", fontWeight: "bold" }}
+                >
+                  ⚠️ {a.event_type.toUpperCase().replace("_", " ")}
                 </span>
-                <span className="event-time">
+                <span
+                  className="event-time"
+                  style={{ marginLeft: "15px", color: "#666" }}
+                >
                   {new Date(a.time).toLocaleTimeString()}
                 </span>
               </div>

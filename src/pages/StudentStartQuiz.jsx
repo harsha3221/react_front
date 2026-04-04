@@ -11,6 +11,7 @@ import {
   reportCheatingApi,
 } from "../api/studentQuizStart.api";
 import { API_BASE } from "../config";
+
 // Initialize Socket with credentials to pick up the Express Session cookie
 const socket = io(`${API_BASE}`, {
   transports: ["websocket"],
@@ -133,11 +134,9 @@ export default function StudentStartQuiz() {
   useEffect(() => {
     if (!user || user.role !== "student") return;
 
+    // Fixed: reportIncident now correctly uses the API which triggers the Socket on the backend
     const reportIncident = (type) => {
       console.warn(`[Proctor] Incident Logged: ${type} for ${user.name}`);
-      // Real-time notification to teacher via WebSocket
-      socket.emit("student_incident", { quizId, event_type: type });
-      // Persistent log via API
       reportCheatingApi(quizId, type, csrfToken);
     };
 

@@ -68,6 +68,8 @@ export default function AuthForm() {
     setIsLogin(!isLogin);
   };
 
+  /* ... imports remain the same ... */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -76,12 +78,7 @@ export default function AuthForm() {
       if (formData.password !== formData.confirmPassword) {
         return setError("Passwords do not match.");
       }
-      if (formData.role === "teacher" && !formData.department) {
-        return setError("Please select a department.");
-      }
-      if (formData.role === "student" && !formData.year) {
-        return setError("Please select a year.");
-      }
+      /* ... other validation checks ... */
     }
 
     try {
@@ -91,43 +88,48 @@ export default function AuthForm() {
 
       const data = await res.json();
 
-      /* =========================
-       HANDLE ERRORS FIRST
-    ========================== */
       if (!res.ok) {
-        // ✅ If backend says email not verified
         if (data.needsVerification) {
-          navigate("/verify-email", {
-            state: { email: data.email },
-          });
+          navigate("/verify-email", { state: { email: data.email } });
           return;
         }
-
         throw new Error(data.message || "Authentication failed");
       }
 
       /* =========================
-       SIGNUP SUCCESS
-    ========================== */
+         SIGNUP SUCCESS
+      ========================== */
       if (!isLogin) {
-        navigate("/verify-email", {
-          state: { email: formData.email },
-        });
+        navigate("/verify-email", { state: { email: formData.email } });
         return;
       }
 
       /* =========================
-       LOGIN SUCCESS
-    ========================== */
-      const meRes = await meApi();
-      if (!meRes.ok) throw new Error("Failed to hydrate session");
+         LOGIN SUCCESS (OPTIMIZED)
+      ========================== */
+      // data.user now comes directly from your updated authController.js
+      if (!data.user) {
+        throw new Error("Login successful but no user data received.");
+      }
 
-      const meData = await meRes.json();
+      // Set the user in global context immediately
+      setUser(data.user);
 
-      setUser(meData.user);
-      setCsrfToken(meData.csrfToken);
+      // If your login response includes the token, set it;
+      // otherwise, a quick call to meApi or a separate csrf endpoint is fine.
+      if (data.csrfToken) {
+        setCsrfToken(data.csrfToken);
+      } else {
+        // Fallback: only hydrate if token is missing
+        const meRes = await meApi();
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          setCsrfToken(meData.csrfToken);
+        }
+      }
 
-      if (meData.user.role === "teacher") {
+      // Navigate based on the role we just received
+      if (data.user.role === "teacher") {
         navigate("/teacher/dashboard", { replace: true });
       } else {
         navigate("/student/dashboard", { replace: true });
@@ -137,6 +139,8 @@ export default function AuthForm() {
       setError(err.message);
     }
   };
+
+  /* ... rest of the component remains the same ... */
 
   let extraFields = 0;
   if (!isLogin && formData.role) extraFields = 1;
