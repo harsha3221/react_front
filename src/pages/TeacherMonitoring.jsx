@@ -72,7 +72,7 @@ export default function TeacherMonitoring() {
           "X-CSRF-Token": csrfToken,
         },
         body: JSON.stringify({
-          studentId,
+          studentId, // This is the ID we passed from the button
           quizId,
           allAtOnce,
         }),
@@ -179,14 +179,18 @@ export default function TeacherMonitoring() {
                       fontSize: "0.85rem",
                     }}
                   >
-                    {new Date(a.time).toLocaleTimeString()}
+                    {new Date(a.time || a.created_at).toLocaleTimeString()}
                   </span>
                 </div>
               </div>
 
               {/* BUTTON: INDIVIDUAL ZERO */}
               <button
-                onClick={() => handlePenalize(a.studentId, false)}
+                onClick={() => {
+                  // FIX: Try student_id (from DB logs) OR studentId (from Socket)
+                  const targetId = a.student_id || a.studentId;
+                  handlePenalize(targetId, false);
+                }}
                 style={{
                   backgroundColor: "white",
                   color: "#d9534f",
