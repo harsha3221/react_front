@@ -183,12 +183,28 @@ export default function TeacherMonitoring() {
                   </span>
                 </div>
               </div>
-
               {/* BUTTON: INDIVIDUAL ZERO */}
+
               <button
                 onClick={() => {
-                  // FIX: Try student_id (from DB logs) OR studentId (from Socket)
+                  // 1. Identify the ID (check both naming formats)
                   const targetId = a.student_id || a.studentId;
+
+                  // 2. DEBUG: See what is being clicked in your browser console
+                  console.log(
+                    "Clicking penalize for student:",
+                    a.studentName,
+                    "ID is:",
+                    targetId,
+                  );
+
+                  if (!targetId) {
+                    alert(
+                      "Error: This alert record is missing a Student ID. Try refreshing the page.",
+                    );
+                    return;
+                  }
+
                   handlePenalize(targetId, false);
                 }}
                 style={{
