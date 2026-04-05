@@ -78,7 +78,6 @@ export default function StudentStartQuiz() {
         setQuiz(data.quiz);
         setQuestions(data.questions || []);
 
-        // Sync existing progress
         const savedAnswersMap = {};
         if (data.existingAnswers && Array.isArray(data.existingAnswers)) {
           data.existingAnswers.forEach((ans) => {
@@ -91,7 +90,6 @@ export default function StudentStartQuiz() {
         }
         setAnswers(savedAnswersMap);
 
-        // Timer Sync
         if (data.attempt?.started_at && data.quiz?.duration_minutes) {
           const startedAt = new Date(data.attempt.started_at).getTime();
           const durationMs = data.quiz.duration_minutes * 60 * 1000;
@@ -134,7 +132,6 @@ export default function StudentStartQuiz() {
   useEffect(() => {
     if (!user || user.role !== "student") return;
 
-    // Fixed: reportIncident now correctly uses the API which triggers the Socket on the backend
     const reportIncident = (type) => {
       console.warn(`[Proctor] Incident Logged: ${type} for ${user.name}`);
       reportCheatingApi(quizId, type, csrfToken);
@@ -153,18 +150,27 @@ export default function StudentStartQuiz() {
     };
 
     const handleBlur = () => reportIncident("window_blur");
-
     const handleContextMenu = (e) => {
       e.preventDefault();
       reportIncident("right_click_attempt");
     };
 
-    // Listen for Teacher Commands (e.g., Force Submission)
+    // Listen for Teacher Commands (Force Submission)
     socket.on("force_submit", (data) => {
       if (String(data.quizId) === String(quizId)) {
         alert("Your session has been terminated by the instructor.");
         handleSubmit();
       }
+    });
+
+    // NEW: Force Zero (Disqualification termination)
+    socket.on("force_logout_zero", (data) => {
+      isSubmittingRef.current = true;
+      alert(
+        data.message ||
+          "Disqualified: You have been assigned zero for this quiz.",
+      );
+      navigate("/student/dashboard", { replace: true });
     });
 
     document.addEventListener("visibilitychange", handleVisibility);
@@ -176,8 +182,9 @@ export default function StudentStartQuiz() {
       window.removeEventListener("blur", handleBlur);
       window.removeEventListener("contextmenu", handleContextMenu);
       socket.off("force_submit");
+      socket.off("force_logout_zero");
     };
-  }, [quizId, csrfToken, handleSubmit, user]);
+  }, [quizId, csrfToken, handleSubmit, user, navigate]);
 
   /* -------------------------------------------------- */
   /* NETWORK RESILIENCE                                 */
@@ -198,13 +205,14 @@ export default function StudentStartQuiz() {
   /* ANSWER INTERACTION                                 */
   /* -------------------------------------------------- */
   const toggleOption = (qid, oid) => {
+    if (isSubmittingRef.current) return; // Prevent interaction after disqualification
+
     setAnswers((prev) => {
       const cur = prev[qid] || [];
       const updated = cur.includes(oid)
         ? cur.filter((x) => x !== oid)
         : [...cur, oid];
 
-      // Background save to prevent data loss on crash
       saveStudentAnswerApi(quizId, qid, updated, csrfToken).catch(() => {
         console.error("Critical: Failed to auto-save progress.");
       });
@@ -249,7 +257,7 @@ export default function StudentStartQuiz() {
               <div className="question-image-wrapper">
                 <img
                   src={q.image_url}
-                  alt="Question Context"
+                  alt="Context"
                   className="question-image"
                   loading="lazy"
                 />
@@ -273,7 +281,7 @@ export default function StudentStartQuiz() {
                     {opt.image_url && (
                       <img
                         src={opt.image_url}
-                        alt="Option Visual"
+                        alt="Visual"
                         className="option-image"
                       />
                     )}

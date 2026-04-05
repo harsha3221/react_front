@@ -68,8 +68,6 @@ export default function AuthForm() {
     setIsLogin(!isLogin);
   };
 
-  /* ... imports remain the same ... */
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -78,7 +76,6 @@ export default function AuthForm() {
       if (formData.password !== formData.confirmPassword) {
         return setError("Passwords do not match.");
       }
-      /* ... other validation checks ... */
     }
 
     try {
@@ -96,31 +93,20 @@ export default function AuthForm() {
         throw new Error(data.message || "Authentication failed");
       }
 
-      /* =========================
-         SIGNUP SUCCESS
-      ========================== */
       if (!isLogin) {
         navigate("/verify-email", { state: { email: formData.email } });
         return;
       }
 
-      /* =========================
-         LOGIN SUCCESS (OPTIMIZED)
-      ========================== */
-      // data.user now comes directly from your updated authController.js
       if (!data.user) {
         throw new Error("Login successful but no user data received.");
       }
 
-      // Set the user in global context immediately
       setUser(data.user);
 
-      // If your login response includes the token, set it;
-      // otherwise, a quick call to meApi or a separate csrf endpoint is fine.
       if (data.csrfToken) {
         setCsrfToken(data.csrfToken);
       } else {
-        // Fallback: only hydrate if token is missing
         const meRes = await meApi();
         if (meRes.ok) {
           const meData = await meRes.json();
@@ -128,7 +114,6 @@ export default function AuthForm() {
         }
       }
 
-      // Navigate based on the role we just received
       if (data.user.role === "teacher") {
         navigate("/teacher/dashboard", { replace: true });
       } else {
@@ -140,19 +125,15 @@ export default function AuthForm() {
     }
   };
 
-  /* ... rest of the component remains the same ... */
-
-  let extraFields = 0;
-  if (!isLogin && formData.role) extraFields = 1;
-  const formHeight = isLogin ? "350px" : `${580 + extraFields * 50}px`;
-
   return (
     <div className="auth-page">
       <div className="page-container">
         <div className="form-wrapper">
+          {/* Key ensures animation triggers on toggle */}
           <div className="form-content" key={isLogin ? "login" : "signup"}>
             <form onSubmit={handleSubmit}>
               <h2>{isLogin ? "Login" : "Sign Up"}</h2>
+
               {error && <p className="error-message">{error}</p>}
 
               {!isLogin && (
@@ -204,20 +185,6 @@ export default function AuthForm() {
                       <option value="4">4th Year</option>
                     </InputField>
                   )}
-
-                  <InputField
-                    label="Password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange("password")}
-                  />
-
-                  <InputField
-                    label="Confirm Password"
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange("confirmPassword")}
-                  />
                 </>
               )}
 
@@ -228,12 +195,19 @@ export default function AuthForm() {
                 onChange={handleChange("email")}
               />
 
-              {isLogin && (
+              <InputField
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange("password")}
+              />
+
+              {!isLogin && (
                 <InputField
-                  label="Password"
+                  label="Confirm Password"
                   type="password"
-                  value={formData.password}
-                  onChange={handleChange("password")}
+                  value={formData.confirmPassword}
+                  onChange={handleChange("confirmPassword")}
                 />
               )}
 
