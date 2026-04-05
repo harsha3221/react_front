@@ -9,13 +9,16 @@ export default function Navbar() {
   const { user, setUser } = useAuth();
 
   const logout = async () => {
-    await fetch(`${API_BASE}/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    setUser(null); // clear user
-    navigate("/");
+    try {
+      await fetch(`${API_BASE}/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      setUser(null);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   const linkClass = ({ isActive }) =>
@@ -23,48 +26,44 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      {/* LEFT */}
       <div className="nav-left">
-        <h2 className="logo" onClick={() => navigate("/")}>
-          Quiz Platform
-        </h2>
+        <h1 className="logo" onClick={() => navigate("/")}>
+          QuizFlow
+        </h1>
       </div>
 
-      {/* RIGHT */}
       <div className="nav-right">
-        {/* ✅ IF NOT LOGGED IN */}
+        {/* IF NOT LOGGED IN */}
         {!user && (
-          <>
-            <button className="login-btn" onClick={() => navigate("/login")}>
-              Login
-            </button>
-          </>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </button>
         )}
 
-        {/* ✅ TEACHER */}
+        {/* TEACHER LINKS */}
         {user?.role === "teacher" && (
           <>
             <NavLink to="/teacher/dashboard" className={linkClass}>
               Dashboard
             </NavLink>
-
             <button className="logout-btn" onClick={logout}>
               Logout
             </button>
           </>
         )}
 
-        {/* ✅ STUDENT */}
+        {/* STUDENT LINKS */}
         {user?.role === "student" && (
           <>
             <NavLink to="/student/dashboard" className={linkClass}>
               Dashboard
             </NavLink>
-
             <NavLink to="/student/available-courses" className={linkClass}>
               Courses
             </NavLink>
-
             <button className="logout-btn" onClick={logout}>
               Logout
             </button>

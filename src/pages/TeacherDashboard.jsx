@@ -92,112 +92,128 @@ export default function TeacherDashboard() {
     <>
       <Navbar role="teacher" />
       <div className="teacher-dashboard">
-        <h1>Teacher Dashboard</h1>
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error-message">{error}</p>}
 
         {teacher ? (
           <>
-            <h2>Welcome, {teacher.name}</h2>
-            <p>Department: {teacher.department || "N/A"}</p>
+            {/* Welcome Section */}
+            <div className="teacher-welcome">
+              <h1>Welcome, {teacher.name}</h1>
+              <p>
+                Department of{" "}
+                <strong>{teacher.department || "General Sciences"}</strong>
+              </p>
+            </div>
 
+            {/* Action Header */}
             <div className="dashboard-header">
               <h3>Your Subjects</h3>
               <button
-                className="create-btn"
+                className="btn-create"
                 onClick={() => setShowForm((v) => !v)}
               >
-                {showForm ? "Cancel" : "Create Subject"}
+                {showForm ? "✕ Close Form" : "+ Create New Subject"}
               </button>
             </div>
 
+            {/* Form Section */}
             {showForm && (
               <form
                 className="create-subject-form"
                 onSubmit={handleCreateSubject}
               >
-                <input
-                  type="text"
-                  placeholder="Subject Name"
-                  value={formData.name}
-                  onChange={handleChange("name")}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Subject Code"
-                  value={formData.code}
-                  onChange={handleChange("code")}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Semester"
-                  value={formData.semester}
-                  onChange={handleChange("semester")}
-                  required
-                />
+                <div className="input-group">
+                  <label>Subject Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Advanced Mathematics"
+                    value={formData.name}
+                    onChange={handleChange("name")}
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <label>Code</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. MATH101"
+                    value={formData.code}
+                    onChange={handleChange("code")}
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <label>Semester</label>
+                  <input
+                    type="number"
+                    placeholder="1-8"
+                    value={formData.semester}
+                    onChange={handleChange("semester")}
+                    required
+                  />
+                </div>
                 <textarea
-                  placeholder="Description"
+                  placeholder="Write a brief subject description..."
                   value={formData.description}
                   onChange={handleChange("description")}
                 />
-
                 <div className="form-actions">
-                  <button
-                    type="button"
-                    className="cancel-btn"
-                    onClick={resetForm}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="submit-btn">
+                  <button type="submit" className="btn-primary">
                     Add Subject
                   </button>
                 </div>
               </form>
             )}
 
+            {/* Grid Section */}
             <div className="subjects-list">
               {subjects.length > 0 ? (
                 subjects.map((sub) => (
                   <div key={sub.id} className="subject-card">
-                    <h4>{sub.name}</h4>
-                    <p>
-                      <strong>Code:</strong> {sub.code}
-                    </p>
-                    <p>
-                      <strong>Semester:</strong> {sub.semester}
-                    </p>
-                    <p>{sub.description}</p>
+                    <div>
+                      <h4>{sub.name}</h4>
+                      <div className="subject-info">
+                        <p>
+                          <strong>Code:</strong> {sub.code}
+                        </p>
+                        <p>
+                          <strong>Semester:</strong> {sub.semester}
+                        </p>
+                        <p>{sub.description || "No description provided."}</p>
+                      </div>
+                    </div>
 
                     <div className="subject-actions">
                       <button
-                        className="quiz-btn"
+                        className="quiz-btn-outline"
                         onClick={() =>
                           navigate(`/teacher/subjects/${sub.id}/quizzes`)
                         }
                       >
                         View Quizzes
                       </button>
-
                       <button
-                        className="quiz-btn"
+                        className="quiz-btn-filled"
                         onClick={() =>
                           navigate(`/teacher/subjects/${sub.id}/quizzes/new`)
                         }
                       >
-                        Create Quiz
+                        + New Quiz
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
-                <p>No subjects found.</p>
+                <p className="p">
+                  No subjects created yet. Click the button above to start.
+                </p>
               )}
             </div>
           </>
         ) : (
-          <p>Loading dashboard...</p>
+          <div className="center" style={{ height: "50vh" }}>
+            <p>Loading dashboard...</p>
+          </div>
         )}
       </div>
     </>

@@ -149,7 +149,7 @@ export default function AuthForm() {
   return (
     <div className="auth-page">
       <div className="page-container">
-        <div className="form-wrapper" style={{ height: formHeight }}>
+        <div className="form-wrapper">
           <div className="form-content" key={isLogin ? "login" : "signup"}>
             <form onSubmit={handleSubmit}>
               <h2>{isLogin ? "Login" : "Sign Up"}</h2>

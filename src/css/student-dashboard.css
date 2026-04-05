@@ -1,292 +1,166 @@
-/* =========================
-   STUDENT DASHBOARD & COURSES
-   ========================= */
+/* teacher-dashboard.css */
 
-/* Page wrapper (below navbar) */
-.student-dashboard-page {
-  background: var(--bg-0);
-  min-height: calc(100vh - 64px);
-  padding: 32px 24px;
-  display: flex;
-  justify-content: center;
+.teacher-dashboard {
+  max-width: var(--max-width);
+  margin: 40px auto;
+  padding: 0 var(--container-padding);
+  animation: authSlideUp 0.6s var(--ease);
 }
 
-/* Main container */
-.student-dashboard {
-  width: 100%;
-  max-width: 1100px;
-}
-
-/* =========================
-   HEADINGS & TEXT
-   ========================= */
-
-.student-dashboard h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 6px;
-  color: var(--text);
-}
-
-.student-dashboard h2 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-top: 18px;
-  margin-bottom: 4px;
-  color: var(--accent-1);
-}
-
-.student-dashboard h3 {
-  font-size: 1.1rem;
-  margin-bottom: 16px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.student-dashboard p {
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-/* =========================
-   FEEDBACK MESSAGES
-   ========================= */
-
-.student-dashboard .error {
-  margin: 12px 0;
-  padding: 10px 14px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  color: #b91c1c;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.student-dashboard .success {
-  margin: 12px 0;
-  padding: 10px 14px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  color: #15803d;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-/* =========================
-   SEARCH BAR
-   ========================= */
-
-.search-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  margin: 20px auto 28px auto;
-}
-
-.search-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  color: var(--muted);
-  pointer-events: none;
-}
-
-.course-search {
-  width: 100%;
-  padding: 12px 16px 12px 44px;
-  font-size: 0.95rem;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
+/* Welcome Hero Section */
+.teacher-welcome {
   background: var(--bg-1);
-  color: var(--text);
-  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
-}
-
-.course-search::placeholder {
-  color: var(--muted);
-}
-
-.course-search:focus {
-  outline: none;
-  border-color: var(--accent-1);
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
-}
-
-/* =========================
-   COURSE SECTIONS (CENTERED)
-   ========================= */
-
-.joined-courses,
-.all-courses {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: center; /* center cards */
-}
-
-/* =========================
-   COURSE CARD (FULL ROW)
-   ========================= */
-
-.course-card {
-  width: 100%;
-  max-width: 1000px;
-  background: var(--bg-1);
-  border: 1px solid #e2e8f0;
-  border-radius: var(--radius-md);
-  padding: 18px 20px;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: var(--shadow-soft);
+  margin-bottom: 40px;
+  border-left: 6px solid var(--accent-1);
+}
+
+.teacher-welcome h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.teacher-welcome p {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+/* Header with Create Button */
+.dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: box-shadow 160ms var(--ease), border-color 160ms var(--ease);
+  margin-bottom: 24px;
 }
 
-.course-card:hover {
-  box-shadow: var(--shadow-strong);
+.dashboard-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Subject Create Form (Inside a Card) */
+.create-subject-form {
+  background: var(--bg-1);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent-soft);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-medium);
+}
+
+.create-subject-form textarea {
+  grid-column: 1 / -1;
+  min-height: 80px;
+}
+
+/* Subjects Grid */
+.subjects-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.subject-card {
+  background: var(--bg-1);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s var(--ease);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.subject-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-medium);
   border-color: var(--accent-1);
 }
 
-/* Left content */
-.course-card h4 {
-  margin: 0 0 6px;
-  font-size: 1.05rem;
+.subject-card h4 {
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--accent-1);
+  margin-bottom: 12px;
 }
 
-.course-card p {
-  margin: 2px 0;
+.subject-info {
+  margin-bottom: 20px;
+}
+
+.subject-info p {
   font-size: 0.9rem;
+  margin: 4px 0;
   color: var(--muted);
 }
 
-.course-card strong {
+.subject-info strong {
   color: var(--text);
+}
+
+/* Actions Styling */
+.subject-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+}
+
+/* Specialized Buttons */
+.btn-create {
+  background: var(--accent-1);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* =========================
-   COURSE STATES
-   ========================= */
-
-.course-card.available {
-  border-color: #e2e8f0;
+.btn-create:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
 }
 
-.course-card.joined {
-  border-color: #bbf7d0;
-  background: linear-gradient(180deg, #ffffff, rgba(34, 197, 94, 0.04));
-}
-
-/* =========================
-   ACTION BUTTONS
-   ========================= */
-
-.course-card button {
-  min-width: 160px;
-  padding: 10px 14px;
+.quiz-btn-outline {
+  background: white;
+  border: 1.5px solid var(--accent-1);
+  color: var(--accent-1);
+  padding: 8px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.9rem;
   cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s;
+}
+
+.quiz-btn-outline:hover {
+  background: var(--accent-soft);
+}
+
+.quiz-btn-filled {
+  background: var(--text);
+  color: white;
   border: none;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s;
 }
 
-/* Join button */
-.join-btn {
-  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-  color: #ffffff;
-}
-
-.join-btn:hover {
-  box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
-}
-
-/* Already joined */
-.joined-btn {
-  border: 1px solid #bbf7d0;
-  background: #f0fdf4;
-  color: #15803d;
-  cursor: not-allowed;
-}
-
-/* =========================
-   EMPTY STATE
-   ========================= */
-
-.joined-courses > p,
-.all-courses > p {
-  width: 100%;
-  max-width: 1000px;
-  padding: 20px;
-  background: var(--bg-1);
-  border: 1px dashed #cbd5e1;
-  border-radius: var(--radius-md);
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-/* =========================
-   FADE-IN ANIMATION
-   ========================= */
-
-.student-dashboard {
-  animation: fadeIn 260ms ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* =========================
-   RESPONSIVE
-   ========================= */
-
-@media (max-width: 768px) {
-  .student-dashboard-page {
-    padding: 24px 16px;
-  }
-
-  .search-wrapper {
-    max-width: 100%;
-  }
-
-  .course-card {
-    max-width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .course-card button {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .student-dashboard h1 {
-    font-size: 1.35rem;
-  }
-
-  .course-card {
-    padding: 16px 14px;
-  }
-
-  .course-card button {
-    font-size: 0.85rem;
-    padding: 9px 12px;
-  }
+.quiz-btn-filled:hover {
+  background: #000;
 }

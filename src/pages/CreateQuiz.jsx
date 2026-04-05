@@ -77,11 +77,9 @@ export default function CreateQuiz() {
     const end = new Date(endTime);
     const now = new Date();
 
-    // 🔥 Tiny edge case fix: 60-second grace period
+    //  Tiny edge case fix: 60-second grace period
     // Allows for network lag or a few seconds of user delay
     const gracePeriod = 60 * 1000;
-
-    /* ---------------- VALIDATIONS ---------------- */
 
     // Check if start time is significantly in the past
     if (start.getTime() < now.getTime() - gracePeriod) {
@@ -102,7 +100,7 @@ export default function CreateQuiz() {
         title,
         description,
         duration,
-        // 🔥 Convert to ISO format before sending to Backend (UTC)
+        // Convert to ISO format before sending to Backend (UTC)
         startTime: start.toISOString(),
         endTime: end.toISOString(),
         csrfToken,
@@ -126,74 +124,94 @@ export default function CreateQuiz() {
   /* ---------------- UI ---------------- */
   return (
     <div className="create-quiz-container">
-      <h2>Create New Quiz</h2>
-
-      {error && <p className="error">{error}</p>}
-      {message && <p className="success">{message}</p>}
-
-      <form onSubmit={handleSubmit} className="quiz-form">
-        <label>
-          Quiz Title:
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </label>
-
-        <label>
-          Description (optional):
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter quiz description..."
-          />
-        </label>
-
-        <label>
-          Duration (in minutes):
-          <input
-            type="number"
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
-            required
-          />
-        </label>
-
-        <label>
-          Start Time:
-          <input
-            type="datetime-local"
-            value={startTime}
-            min={getCurrentDateTimeLocal()} // 🔥 no past selection
-            onChange={(e) => setStartTime(e.target.value)}
-            required
-          />
-        </label>
-
-        <label>
-          End Time:
-          <input
-            type="datetime-local"
-            value={endTime}
-            min={startTime || getCurrentDateTimeLocal()} // 🔥 must be after start
-            onChange={(e) => setEndTime(e.target.value)}
-            required
-          />
-        </label>
-
-        <button type="submit" className="btn-submit">
-          Create Quiz
-        </button>
-      </form>
-
       <button
         onClick={() => navigate(`/teacher/subjects/${subjectId}/quizzes`)}
         className="btn-back"
       >
         ← Back to Quizzes
       </button>
+
+      <h2>Create New Quiz</h2>
+      <p className="create-quiz-subtitle">
+        Set the schedule and parameters for your assessment.
+      </p>
+
+      {error && (
+        <div className="error">
+          <span>⚠️</span> {error}
+        </div>
+      )}
+      {message && (
+        <div className="success">
+          <span>✅</span> {message}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="quiz-form">
+        <label>
+          Quiz Title
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Midterm Organic Chemistry"
+            required
+          />
+        </label>
+
+        <label>
+          Description (optional)
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What should students focus on during this quiz?"
+          />
+        </label>
+
+        <div className="form-row">
+          <label>
+            Duration (Minutes)
+            <input
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="60"
+              required
+            />
+          </label>
+
+          {/* Placeholder for visual balance or extra settings */}
+          <div style={{ visibility: "hidden", height: 0 }}></div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            Start Time
+            <input
+              type="datetime-local"
+              value={startTime}
+              min={getCurrentDateTimeLocal()}
+              onChange={(e) => setStartTime(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            End Time
+            <input
+              type="datetime-local"
+              value={endTime}
+              min={startTime || getCurrentDateTimeLocal()}
+              onChange={(e) => setEndTime(e.target.value)}
+              required
+            />
+          </label>
+        </div>
+
+        <button type="submit" className="btn-submit">
+          Publish Quiz
+        </button>
+      </form>
     </div>
   );
 }
