@@ -164,3 +164,226 @@
 .quiz-btn-filled:hover {
   background: #000;
 }
+/* Add these to your existing student-dashboard.css */
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+  color: var(--muted);
+}
+
+.subject-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--accent-soft);
+  color: var(--accent-1);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px;
+  background: var(--bg-1);
+  border: 2px dashed #e2e8f0;
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+/* =========================
+   SEARCH & ENROLLMENT UI
+   ========================= */
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 350px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  font-size: 0.9rem;
+  opacity: 0.5;
+}
+
+.course-search-input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background: var(--bg-1);
+  font-size: 0.95rem;
+  transition: all 0.2s var(--ease);
+}
+
+.course-search-input:focus {
+  outline: none;
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+  background: #fff;
+}
+
+.success-message {
+  background: #f0fdf4;
+  color: #15803d;
+  padding: 14px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-weight: 600;
+  border-left: 5px solid #22c55e;
+  animation: authSlideUp 0.3s ease;
+}
+
+/* Visual feedback for already joined cards */
+.subject-card.card-joined {
+  opacity: 0.8;
+  background: #f8fafc;
+  border-style: dashed;
+}
+
+.subject-card.card-joined h4 {
+  color: var(--muted);
+}
+
+/* Adjusting buttons for full width in the catalog */
+.subject-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .search-container {
+    max-width: 100%;
+  }
+}
+/* ==========================================================
+   QUIZ LIST SPECIFIC STYLES (Student View)
+   ========================================================== */
+
+/* Container for the Quiz groups */
+.joined-courses h2 {
+  font-size: 1.4rem;
+  margin: 32px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+}
+
+/* Base Quiz Card (reusing your .subject-card feel) */
+.course-card {
+  background: var(--bg-1);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s var(--ease);
+}
+
+.course-card:hover {
+  transform: translateX(6px);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--accent-1);
+}
+
+/* Status Left-Borders */
+.course-card.active {
+  border-left: 6px solid #22c55e;
+} /* Green */
+.course-card.upcoming {
+  border-left: 6px solid #3b82f6;
+} /* Blue */
+.course-card.expired {
+  border-left: 6px solid #94a3b8;
+} /* Gray */
+
+.course-card h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.course-card p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 4px 0;
+}
+
+/* Countdown Timer */
+.countdown {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: var(--accent-1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* Reusing your existing button style for the Join/Start Button */
+.join-btn {
+  background: var(--accent-1);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+  min-width: 150px;
+}
+
+.join-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.join-btn:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Responsive fix for Quiz Cards */
+@media (max-width: 768px) {
+  .course-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .join-btn {
+    width: 100%;
+  }
+}

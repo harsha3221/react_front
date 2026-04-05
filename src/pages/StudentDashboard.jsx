@@ -12,9 +12,6 @@ export default function StudentDashboard() {
 
   const navigate = useNavigate();
 
-  /* ---------------------------------- */
-  /* LOAD DASHBOARD                     */
-  /* ---------------------------------- */
   useEffect(() => {
     fetchStudentDashboardApi()
       .then(async (res) => {
@@ -35,73 +32,82 @@ export default function StudentDashboard() {
       });
   }, []);
 
-  /* ---------------------------------- */
-  /* LOADING STATE                      */
-  /* ---------------------------------- */
   if (loading) {
     return (
-      <div className="student-dashboard">
-        Loading your registered courses...
+      <div className="loading-screen">
+        <div className="spinner"></div>
+        <p>Loading your registered courses...</p>
       </div>
     );
   }
 
-  /* ---------------------------------- */
-  /* RENDER                             */
-  /* ---------------------------------- */
   return (
     <>
       <Navbar role="student" />
 
-      <div className="student-dashboard-page">
-        <div className="student-dashboard">
-          <h1>Student Dashboard: My Registered Courses</h1>
+      <div className="teacher-dashboard">
+        {" "}
+        {/* Reusing the layout container */}
+        {/* Hero Section */}
+        <section className="teacher-welcome">
+          <h1>Welcome, {student?.roll_number || "Student"}</h1>
+          <p>
+            You are currently enrolled in{" "}
+            <strong>{joinedSubjects.length}</strong> courses for Year{" "}
+            {student?.year || "N/A"}.
+          </p>
+        </section>
+        {error && <div className="error-message">{error}</div>}
+        {/* Header Area */}
+        <div className="dashboard-header">
+          <h3>My Registered Courses</h3>
+          <button
+            className="btn-create"
+            onClick={() => navigate("/student/available-courses")}
+          >
+            + Enroll in New Course
+          </button>
+        </div>
+        {/* Subjects Grid */}
+        <div className="subjects-list">
+          {joinedSubjects.length > 0 ? (
+            joinedSubjects.map((sub) => (
+              <div
+                key={sub.id}
+                className="subject-card"
+                onClick={() => navigate(`/student/subject/${sub.id}/quizzes`)}
+                style={{ cursor: "pointer" }}
+              >
+                <div>
+                  <div className="subject-badge">Semester {sub.semester}</div>
+                  <h4>{sub.name}</h4>
 
-          {error && <p className="error">{error}</p>}
+                  <div className="subject-info">
+                    <p>
+                      <strong>Code:</strong> {sub.code}
+                    </p>
+                    <p>
+                      <strong>Instructor:</strong> {sub.teacher_name}
+                    </p>
+                  </div>
+                </div>
 
-          {student ? (
-            <>
-              <h2>Welcome, {student.roll_number}</h2>
-              <p>Year: {student.year}</p>
-
-              <section className="joined-courses">
-                <h3>
-                  Courses You Are Currently Enrolled In ({joinedSubjects.length}
-                  )
-                </h3>
-
-                {joinedSubjects.length > 0 ? (
-                  joinedSubjects.map((sub) => (
-                    <div
-                      key={sub.id}
-                      className="course-card joined"
-                      onClick={() =>
-                        navigate(`/student/subject/${sub.id}/quizzes`)
-                      }
-                      style={{ cursor: "pointer" }}
-                    >
-                      <h4>{sub.name}</h4>
-                      <p>
-                        <strong>Code:</strong> {sub.code}
-                      </p>
-                      <p>
-                        <strong>Teacher:</strong> {sub.teacher_name}
-                      </p>
-                      <p>
-                        <strong>Semester:</strong> {sub.semester}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p>
-                    You haven’t registered for any courses yet. Check the
-                    <strong> Available Courses </strong> page to enroll.
-                  </p>
-                )}
-              </section>
-            </>
+                <div className="subject-actions">
+                  <button className="quiz-btn-filled">View Quizzes</button>
+                  <button className="quiz-btn-outline">Subject Details</button>
+                </div>
+              </div>
+            ))
           ) : (
-            <p>Could not load student profile.</p>
+            <div className="empty-state">
+              <p>You haven't registered for any courses yet.</p>
+              <button
+                className="toggle-btn"
+                onClick={() => navigate("/student/available-courses")}
+              >
+                Browse Available Courses
+              </button>
+            </div>
           )}
         </div>
       </div>

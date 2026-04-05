@@ -3,14 +3,16 @@ import "../css/student-dashboard.css";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE } from "../config";
+
 export default function AvailableCourses() {
   const [availableSubjects, setAvailableSubjects] = useState([]);
   const [joinedIds, setJoinedIds] = useState(new Set());
-  const [searchTerm, setSearchTerm] = useState(""); // ✅ NEW
+  const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const { csrfToken } = useAuth();
+
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, []);
@@ -18,7 +20,6 @@ export default function AvailableCourses() {
   useEffect(() => {
     fetch(`${API_BASE}/student/available-courses`, {
       method: "GET",
-      // headers: { "CSRF-Token": csrfToken },
       credentials: "include",
     })
       .then(async (res) => {
@@ -62,73 +63,91 @@ export default function AvailableCourses() {
       .catch((err) => setError(err.message));
   };
 
-  // ✅ FILTER COURSES BASED ON SEARCH
-  const filteredSubjects = availableSubjects.filter((sub) =>
-    sub.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredSubjects = availableSubjects.filter(
+    (sub) =>
+      sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sub.code.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (loading) {
     return (
-      <div className="student-dashboard">Loading available courses...</div>
+      <div className="loading-screen">
+        <div className="spinner"></div>
+        <p>Fetching available courses...</p>
+      </div>
     );
   }
 
   return (
     <>
       <Navbar role="student" />
-      <div className="student-dashboard">
-        <h1>Available Courses Enrollment</h1>
-        <p>Select a course to join.</p>
+      <div className="teacher-dashboard">
+        {" "}
+        {/* Consistent layout container */}
+        <section className="teacher-welcome">
+          <h1>Course Catalog</h1>
+          <p>Explore and enroll in new subjects for the current semester.</p>
+        </section>
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        <div className="dashboard-header">
+          <h3>All Available Courses</h3>
 
-        {/* ✅ SEARCH BAR */}
-        <div className="search-wrapper">
-          <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            className="course-search"
-            placeholder="Search by course name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          {/* PREMIUM SEARCH BAR */}
+          <div className="search-container">
+            <span className="search-icon">🔍</span>
+            <input
+              type="text"
+              className="course-search-input"
+              placeholder="Search by name or course code..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-
-        {error && <p className="error">{error}</p>}
-        {success && <p className="success">{success}</p>}
-
-        <section className="all-courses">
+        <div className="subjects-list">
           {filteredSubjects.length > 0 ? (
             filteredSubjects.map((sub) => {
               const isJoined = joinedIds.has(sub.id);
               return (
                 <div
                   key={sub.id}
-                  className={`course-card ${isJoined ? "joined" : "available"}`}
+                  className={`subject-card ${isJoined ? "card-joined" : ""}`}
                 >
-                  <h4>{sub.name}</h4>
-                  <p>
-                    <strong>Code:</strong> {sub.code}
-                  </p>
-                  <p>
-                    <strong>Teacher:</strong> {sub.teacher_name}
-                  </p>
-                  <p>
-                    <strong>Semester:</strong> {sub.semester}
-                  </p>
+                  <div>
+                    <div className="subject-badge">Semester {sub.semester}</div>
+                    <h4>{sub.name}</h4>
+                    <div className="subject-info">
+                      <p>
+                        <strong>Code:</strong> {sub.code}
+                      </p>
+                      <p>
+                        <strong>Instructor:</strong> {sub.teacher_name}
+                      </p>
+                    </div>
+                  </div>
 
-                  <button
-                    className={isJoined ? "joined-btn" : "join-btn"}
-                    onClick={() => !isJoined && handleJoin(sub.id, sub.name)}
-                    disabled={isJoined}
-                  >
-                    {isJoined ? "✅ Already Joined" : "➕ Join Course"}
-                  </button>
+                  <div className="subject-actions">
+                    <button
+                      className={
+                        isJoined ? "quiz-btn-outline" : "quiz-btn-filled"
+                      }
+                      onClick={() => !isJoined && handleJoin(sub.id, sub.name)}
+                      disabled={isJoined}
+                      style={{ width: "100%", gridColumn: "1 / -1" }}
+                    >
+                      {isJoined ? "✓ Enrolled" : "Enroll Now"}
+                    </button>
+                  </div>
                 </div>
               );
             })
           ) : (
-            <p>No matching courses found.</p>
+            <div className="empty-state">
+              <p>No courses found matching "{searchTerm}"</p>
+            </div>
           )}
-        </section>
+        </div>
       </div>
     </>
   );
