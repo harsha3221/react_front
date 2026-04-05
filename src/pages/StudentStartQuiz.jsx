@@ -61,7 +61,7 @@ export default function StudentStartQuiz() {
   }, [quizId, csrfToken, navigate]);
 
   /* -------------------------------------------------- */
-  /* DATA FETCHING                                      */
+  /* DATA FETCHING & TIMER INITIALIZATION               */
   /* -------------------------------------------------- */
   useEffect(() => {
     const load = async () => {
@@ -78,6 +78,7 @@ export default function StudentStartQuiz() {
         setQuiz(data.quiz);
         setQuestions(data.questions || []);
 
+        // Sync answers
         const savedAnswersMap = {};
         if (data.existingAnswers && Array.isArray(data.existingAnswers)) {
           data.existingAnswers.forEach((ans) => {
@@ -90,10 +91,13 @@ export default function StudentStartQuiz() {
         }
         setAnswers(savedAnswersMap);
 
+        // TIMER LOGIC: Personal Start Time + Duration
         if (data.attempt?.started_at && data.quiz?.duration_minutes) {
           const startedAt = new Date(data.attempt.started_at).getTime();
           const durationMs = data.quiz.duration_minutes * 60 * 1000;
-          const remaining = startedAt + durationMs - Date.now();
+          const personalEndTime = startedAt + durationMs;
+
+          const remaining = personalEndTime - Date.now();
           setTimeLeft(Math.max(0, remaining));
         }
       } catch (err) {
@@ -127,13 +131,13 @@ export default function StudentStartQuiz() {
   }, [timeLeft, handleSubmit]);
 
   /* -------------------------------------------------- */
-  /* TOP-NOTCH PROCTORING & SOCKET EVENTS               */
+  /* PROCTORING & SOCKET COMMANDS                       */
   /* -------------------------------------------------- */
   useEffect(() => {
     if (!user || user.role !== "student") return;
 
     const reportIncident = (type) => {
-      console.warn(`[Proctor] Incident Logged: ${type} for ${user.name}`);
+      console.warn(`[Proctor] Incident Logged: ${type}`);
       reportCheatingApi(quizId, type, csrfToken);
     };
 
@@ -142,9 +146,7 @@ export default function StudentStartQuiz() {
         reportIncident("tab_switch");
         if (!warnedOnceRef.current) {
           warnedOnceRef.current = true;
-          alert(
-            "SECURITY WARNING: Tab switching is monitored. Your instructor has been notified.",
-          );
+          alert("SECURITY WARNING: Tab switching is monitored.");
         }
       }
     };
@@ -155,7 +157,7 @@ export default function StudentStartQuiz() {
       reportIncident("right_click_attempt");
     };
 
-    // Listen for Teacher Commands (Force Submission)
+    // Teacher Command: Regular Force Submit
     socket.on("force_submit", (data) => {
       if (String(data.quizId) === String(quizId)) {
         alert("Your session has been terminated by the instructor.");
@@ -163,7 +165,7 @@ export default function StudentStartQuiz() {
       }
     });
 
-    // NEW: Force Zero (Disqualification termination)
+    // Teacher Command: Disqualification (Assign Zero)
     socket.on("force_logout_zero", (data) => {
       isSubmittingRef.current = true;
       alert(
@@ -187,25 +189,10 @@ export default function StudentStartQuiz() {
   }, [quizId, csrfToken, handleSubmit, user, navigate]);
 
   /* -------------------------------------------------- */
-  /* NETWORK RESILIENCE                                 */
-  /* -------------------------------------------------- */
-  useEffect(() => {
-    const onOffline = () => {
-      alert(
-        "Network Connection Lost. Progress saved. Auto-submitting for security.",
-      );
-      handleSubmit();
-    };
-
-    window.addEventListener("offline", onOffline);
-    return () => window.removeEventListener("offline", onOffline);
-  }, [handleSubmit]);
-
-  /* -------------------------------------------------- */
   /* ANSWER INTERACTION                                 */
   /* -------------------------------------------------- */
   const toggleOption = (qid, oid) => {
-    if (isSubmittingRef.current) return; // Prevent interaction after disqualification
+    if (isSubmittingRef.current) return;
 
     setAnswers((prev) => {
       const cur = prev[qid] || [];
@@ -214,13 +201,16 @@ export default function StudentStartQuiz() {
         : [...cur, oid];
 
       saveStudentAnswerApi(quizId, qid, updated, csrfToken).catch(() => {
-        console.error("Critical: Failed to auto-save progress.");
+        console.error("Auto-save failed.");
       });
 
       return { ...prev, [qid]: updated };
     });
   };
 
+  /* -------------------------------------------------- */
+  /* RENDERING HELPERS                                  */
+  /* -------------------------------------------------- */
   if (loading)
     return <div className="loading-screen">Encrypting Quiz Session...</div>;
   if (error) return <div className="error-screen">Error: {error}</div>;

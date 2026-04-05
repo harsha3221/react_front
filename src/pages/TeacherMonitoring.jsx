@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { API_BASE } from "../config";
+import { useAuth } from "../context/AuthContext";
 
 // Initialize Socket outside to prevent multiple connections on re-render
 const socket = io(`${API_BASE}`, {
@@ -12,6 +13,7 @@ const socket = io(`${API_BASE}`, {
 export default function TeacherMonitoring() {
   const [alerts, setAlerts] = useState([]);
   const { quizId } = useParams();
+  const { csrfToken } = useAuth();
 
   useEffect(() => {
     // 1. INITIAL LOAD: Fetch history from DB
@@ -65,7 +67,10 @@ export default function TeacherMonitoring() {
     try {
       const response = await fetch(`${API_BASE}/api/cheating/assign-zero`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
         body: JSON.stringify({
           studentId,
           quizId,
