@@ -49,7 +49,7 @@ export default function TeacherQuizResults() {
   }, [loadResults]);
 
   /* -------------------------------------------------- */
-  /* PUBLISH RESULTS (DOUBLE-CLICK SAFE)                */
+  /* PUBLISH RESULTS                                    */
   /* -------------------------------------------------- */
   const publishResults = async () => {
     if (publishing) return;
@@ -73,34 +73,106 @@ export default function TeacherQuizResults() {
   };
 
   /* -------------------------------------------------- */
-  /* RENDER                                             */
+  /* PROCTORING HELPER                                  */
+  /* -------------------------------------------------- */
+  const renderProctoringStatus = (cheatingCount) => {
+    if (!cheatingCount || cheatingCount === 0) {
+      return (
+        <span style={{ color: "#2ecc71", fontWeight: "600" }}>✅ Clear</span>
+      );
+    }
+    return (
+      <span
+        title="Student flagged for tab switching or leaving the screen"
+        style={{
+          backgroundColor: "#fff3cd",
+          color: "#856404",
+          padding: "2px 8px",
+          borderRadius: "4px",
+          fontSize: "0.85rem",
+          fontWeight: "bold",
+          border: "1px solid #ffeeba",
+        }}
+      >
+        ⚠️ {cheatingCount} Flags
+      </span>
+    );
+  };
+
+  /* -------------------------------------------------- */
+  /* LOADING & ERROR STATES                             */
   /* -------------------------------------------------- */
   if (loading) {
     return (
       <>
         <Navbar role="teacher" />
         <div className="results-page">
-          <p>Loading results...</p>
+          <div style={{ textAlign: "center", marginTop: "50px" }}>
+            <p>Loading results...</p>
+          </div>
         </div>
       </>
     );
   }
 
+  // This uses the 'error' variable, fixing the ESLint warning
   if (error) {
     return (
       <>
         <Navbar role="teacher" />
-        <div className="results-page error">{error}</div>
+        <div className="results-page">
+          <div
+            style={{
+              backgroundColor: "#f8d7da",
+              color: "#721c24",
+              padding: "15px",
+              borderRadius: "5px",
+              margin: "20px auto",
+              maxWidth: "600px",
+              textAlign: "center",
+            }}
+          >
+            <strong>Error:</strong> {error}
+            <br />
+            <button
+              onClick={loadResults}
+              style={{ marginTop: "10px", cursor: "pointer" }}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
       </>
     );
   }
 
+  /* -------------------------------------------------- */
+  /* MAIN RENDER                                        */
+  /* -------------------------------------------------- */
   return (
     <>
       <Navbar role="teacher" />
 
-      <div className="results-page">
-        <h2>Quiz Results</h2>
+      <div
+        className="results-page"
+        style={{ padding: "20px", maxWidth: "1000px", margin: "0 auto" }}
+      >
+        <header
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <h2>Quiz Results</h2>
+          <button
+            onClick={loadResults}
+            style={{ cursor: "pointer", padding: "5px 10px" }}
+          >
+            🔄 Refresh
+          </button>
+        </header>
 
         {/* PUBLISH BUTTON */}
         {!published ? (
@@ -108,12 +180,19 @@ export default function TeacherQuizResults() {
             className="btn-publish"
             onClick={publishResults}
             disabled={publishing}
+            style={{
+              marginBottom: "20px",
+              padding: "10px 20px",
+              cursor: "pointer",
+            }}
           >
             {publishing ? "Publishing..." : "📢 Publish Results to Students"}
           </button>
         ) : (
-          <p style={{ color: "green", fontWeight: "bold" }}>
-            ✅ Results Published
+          <p
+            style={{ color: "green", fontWeight: "bold", marginBottom: "20px" }}
+          >
+            ✅ Results Published to Students
           </p>
         )}
 
@@ -121,22 +200,50 @@ export default function TeacherQuizResults() {
         {results.length === 0 ? (
           <p>No submissions yet.</p>
         ) : (
-          <table>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+            }}
+          >
             <thead>
-              <tr>
-                <th>Student</th>
-                <th>Obtained</th>
-                <th>Total</th>
-                <th>Evaluated At</th>
+              <tr style={{ backgroundColor: "#f4f4f4", textAlign: "left" }}>
+                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
+                  Student
+                </th>
+                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
+                  Score
+                </th>
+                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
+                  Proctoring Status
+                </th>
+                <th style={{ padding: "12px", borderBottom: "2px solid #ddd" }}>
+                  Evaluated At
+                </th>
               </tr>
             </thead>
             <tbody>
               {results.map((r, i) => (
-                <tr key={i}>
-                  <td>{r.student_name}</td>
-                  <td>{r.obtained_marks}</td>
-                  <td>{r.total_marks}</td>
-                  <td>{new Date(r.evaluated_at).toLocaleString()}</td>
+                <tr key={i} style={{ borderBottom: "1px solid #eee" }}>
+                  <td style={{ padding: "12px" }}>
+                    <strong>{r.student_name}</strong>
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    {r.obtained_marks} / {r.total_marks}
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    {renderProctoringStatus(r.cheating_count)}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      fontSize: "0.9rem",
+                      color: "#666",
+                    }}
+                  >
+                    {new Date(r.evaluated_at).toLocaleString()}
+                  </td>
                 </tr>
               ))}
             </tbody>
