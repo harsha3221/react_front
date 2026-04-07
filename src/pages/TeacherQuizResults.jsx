@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 
+// 1. IMPORT FROM PAGES
+import QuizAIInsights from "./QuizAIInsights";
+
 import {
   fetchQuizResultsApi,
   publishQuizResultsApi,
@@ -18,9 +21,9 @@ export default function TeacherQuizResults() {
   const [error, setError] = useState("");
   const [publishing, setPublishing] = useState(false);
 
-  /* -------------------------------------------------- */
-  /* LOAD RESULTS                                       */
-  /* -------------------------------------------------- */
+  // 2. STATE TO TOGGLE AI SECTION
+  const [showAI, setShowAI] = useState(false);
+
   const loadResults = useCallback(() => {
     setLoading(true);
     setError("");
@@ -48,9 +51,6 @@ export default function TeacherQuizResults() {
     loadResults();
   }, [loadResults]);
 
-  /* -------------------------------------------------- */
-  /* PUBLISH RESULTS                                    */
-  /* -------------------------------------------------- */
   const publishResults = async () => {
     if (publishing) return;
     setPublishing(true);
@@ -72,9 +72,6 @@ export default function TeacherQuizResults() {
     }
   };
 
-  /* -------------------------------------------------- */
-  /* PROCTORING HELPER                                  */
-  /* -------------------------------------------------- */
   const renderProctoringStatus = (cheatingCount) => {
     if (!cheatingCount || cheatingCount === 0) {
       return (
@@ -99,9 +96,6 @@ export default function TeacherQuizResults() {
     );
   };
 
-  /* -------------------------------------------------- */
-  /* LOADING & ERROR STATES                             */
-  /* -------------------------------------------------- */
   if (loading) {
     return (
       <>
@@ -115,7 +109,6 @@ export default function TeacherQuizResults() {
     );
   }
 
-  // This uses the 'error' variable, fixing the ESLint warning
   if (error) {
     return (
       <>
@@ -146,9 +139,6 @@ export default function TeacherQuizResults() {
     );
   }
 
-  /* -------------------------------------------------- */
-  /* MAIN RENDER                                        */
-  /* -------------------------------------------------- */
   return (
     <>
       <Navbar role="teacher" />
@@ -166,13 +156,50 @@ export default function TeacherQuizResults() {
           }}
         >
           <h2>Quiz Results</h2>
-          <button
-            onClick={loadResults}
-            style={{ cursor: "pointer", padding: "5px 10px" }}
-          >
-            🔄 Refresh
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            {/* 3. AI TOGGLE BUTTON */}
+            <button
+              onClick={() => setShowAI(!showAI)}
+              style={{
+                cursor: "pointer",
+                padding: "8px 16px",
+                backgroundColor: showAI ? "#6c757d" : "#8e44ad",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "all 0.3s ease",
+              }}
+            >
+              {showAI ? "Hide Insights" : "✨ AI Insights"}
+            </button>
+
+            <button
+              onClick={loadResults}
+              style={{ cursor: "pointer", padding: "5px 10px" }}
+            >
+              🔄 Refresh
+            </button>
+          </div>
         </header>
+
+        {/* 4. RENDER AI PAGE/COMPONENT HERE */}
+        {showAI && (
+          <div
+            style={{
+              marginBottom: "30px",
+              border: "1px dashed #8e44ad",
+              borderRadius: "12px",
+              padding: "10px",
+              backgroundColor: "#fcfaff",
+            }}
+          >
+            <QuizAIInsights quizId={quizId} />
+          </div>
+        )}
 
         {/* PUBLISH BUTTON */}
         {!published ? (

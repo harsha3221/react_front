@@ -18,7 +18,7 @@ import StudentStartQuiz from "./pages/StudentStartQuiz.jsx";
 import StudentSubmitted from "./pages/StudentSubmitted.jsx";
 import TeacherQuizResults from "./pages/TeacherQuizResults.jsx";
 import StudentQuizResult from "./pages/StudentQuizResult.jsx";
-
+import QuizAIInsights from "./pages/QuizAIInsights.jsx"; // Adjust path as needed
 import VerifyEmail from "./pages/VerifyEmail";
 import VerificationSuccess from "./pages/VerificationSuccess.jsx";
 import VerifyEmailRequired from "./pages/verifyEmailRequired.jsx";
@@ -69,6 +69,18 @@ function App() {
         element={
           <ProtectedRoute role="teacher">
             <TeacherMonitoring />
+          </ProtectedRoute>
+        }
+      />
+      {/* ✅ AI ANALYSIS REPORT */}
+      <Route
+        path="/teacher/quiz/:quizId/analysis"
+        element={
+          <ProtectedRoute role="teacher">
+            {/* If you want it to look like a full page, wrap it in a div or a Page layout */}
+            <div className="p-6">
+              <QuizAIInsights />
+            </div>
           </ProtectedRoute>
         }
       />
