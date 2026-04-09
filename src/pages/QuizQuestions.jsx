@@ -10,6 +10,14 @@ import {
   updateQuestionApi,
   deleteQuestionApi,
 } from "../api/quizQuestions.api";
+const messages = [
+  "🤖 Thinking of a tricky question...",
+  "📚 Searching knowledge...",
+  "🧠 AI is cooking something smart...",
+  "⚡ Almost ready...",
+  "🎯 Generating the perfect question for you..."
+];
+const isTeacher = true;
 
 export default function QuizQuestions() {
   const { quizId } = useParams();
@@ -31,6 +39,12 @@ export default function QuizQuestions() {
   ]);
   const [questionImage, setQuestionImage] = useState(null);
   const [questionPreview, setQuestionPreview] = useState(null);
+  const [topic, setTopic] = useState("");
+  const [difficulty, setDifficulty] = useState("easy");
+  const [aiQuestion, setAiQuestion] = useState(null);
+
+  const [aiLoading, setAiLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState(messages[0]);
 
   /* ---------------- EDIT MODE ---------------- */
   const [editMode, setEditMode] = useState(false);
@@ -116,6 +130,19 @@ export default function QuizQuestions() {
   useEffect(() => {
     fetchQuestions();
   }, [fetchQuestions]);
+
+  useEffect(() => {
+  if (!aiLoading) return;
+
+  let i = 0;
+
+  const interval = setInterval(() => {
+    setLoadingText(messages[i]);
+    i = (i + 1) % messages.length;
+  }, 2000);
+
+  return () => clearInterval(interval);
+}, [aiLoading]);
 
   /* ---------------- ACTIONS ---------------- */
   const resetForm = useCallback(() => {
@@ -209,6 +236,37 @@ export default function QuizQuestions() {
     }
   };
 
+  const handleGenerateAI = async () => {
+  console.log("Button clicked");
+
+  setAiLoading(true); // 🔥 ADD THIS LINE
+
+  try {
+    const res = await fetch("http://localhost:3000/generate-ai", {
+      method: "POST",
+      credentials: "include", 
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ topic, difficulty }),
+    });
+
+    const data = await res.json();
+    console.log("AI DATA:", data);
+
+    if (data.question && data.options) {
+      setAiQuestion(data);
+    } else {
+      alert(data.message);
+    }
+
+  } catch (err) {
+    console.error("AI error:", err);
+  } finally {
+    setAiLoading(false); // STOP loading
+  }
+};
+
   const handleDeleteQuestion = async (questionId) => {
     if (!window.confirm("Are you sure you want to delete this question?"))
       return;
@@ -268,7 +326,7 @@ export default function QuizQuestions() {
             <ul>
               {q.options.map((opt) => (
                 <li key={opt.id}>
-                  {opt.is_correct ? "✅" : "⭕"} {opt.option_text}
+                  {isTeacher && (opt.is_correct ? "✅" : "⭕")} {opt.option_text}
                   {opt.image_url && (
                     <img
                       src={opt.image_url}
@@ -282,6 +340,81 @@ export default function QuizQuestions() {
           </div>
         ))}
       </div>
+      
+<div style={{ marginBottom: "20px", padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }}>
+  <h3>Generate Question using AI</h3>
+
+  <input
+    type="text"
+    placeholder="Enter topic (e.g., Arrays, Physics)"
+    value={topic}
+    onChange={(e) => setTopic(e.target.value)}
+    style={{ marginRight: "10px", padding: "5px" }}
+  />
+
+  <select
+    value={difficulty}
+    onChange={(e) => setDifficulty(e.target.value)}
+    style={{ marginRight: "10px", padding: "5px" }}
+  >
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+  </select>
+
+  <button type="button" onClick={handleGenerateAI}>
+    Generate Question
+  </button>
+  {aiLoading && (
+  <div style={{ marginTop: "10px" }}>
+    <p>{loadingText}</p>
+  </div>
+)}
+</div>
+
+
+
+{aiQuestion && (
+  <div style={{ border: "1px solid green", padding: "10px", marginTop: "10px" }}>
+    <h4>🤖 Generated Question</h4>
+
+   <p>{aiQuestion?.question}</p>
+
+    <ul>
+      {aiQuestion?.options?.map((opt, i) => (
+        <li key={i}>
+          {opt.text}
+        </li>
+      ))}
+    </ul>
+
+    <button
+      onClick={() => {
+        setQuestionText(aiQuestion.question);
+        setOptions(
+          aiQuestion.options.map((opt) => ({
+            option_text: opt.text,
+            is_correct: opt.is_correct,
+            image: null,
+            previewUrl: null,
+          }))
+        );
+        setAiQuestion(null);
+      }}
+    >
+      ➕ Add to Quiz
+    </button>
+
+    <button onClick={() => setAiQuestion(null)}>
+      ❌ Cancel
+    </button>
+
+    <button onClick={handleGenerateAI}>
+      🔄 Regenerate
+    </button>
+  </div>
+)}
+
 
       {/* FORM SECTION */}
       <form onSubmit={handleSubmit} className="add-question-form">

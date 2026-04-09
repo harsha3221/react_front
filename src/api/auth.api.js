@@ -26,9 +26,20 @@ export const signupApi = (payload) => {
 };
 
 /* ---------------- HYDRATE SESSION ---------------- */
-export const meApi = () => {
+export const meApi = async () => {
+    // 1. Get CSRF token
+    const csrfRes = await fetch(`${API_BASE}/csrf-token`, {
+        credentials: "include",
+    });
+
+    const { csrfToken } = await csrfRes.json();
+
+    // 2. Call /me with token
     return fetch(`${API_BASE}/me`, {
         credentials: "include",
+        headers: {
+            "CSRF-Token": csrfToken,
+        },
     });
 };
 export const resendVerificationApi = (email) => {

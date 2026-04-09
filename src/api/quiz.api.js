@@ -45,3 +45,16 @@ export const deleteQuizApi = (quizId, csrfToken) => {
         },
     });
 };
+
+/* ---------------------------------- */
+/* GENERATE AI QUESTION               */
+/* ---------------------------------- */
+export const generateAIQuestionApi = (topic, difficulty) => {
+    return fetch(`${API_BASE}/generate-ai`, {   // ✅ IMPORTANT CHANGE
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ topic, difficulty }),
+    });
+};
