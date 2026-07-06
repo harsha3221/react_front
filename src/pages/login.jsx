@@ -49,7 +49,7 @@ export default function AuthForm() {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-  const { setCsrfToken, setUser } = useAuth();
+  const { csrfToken, setCsrfToken, setUser } = useAuth();
 
   const handleChange = (field) => (e) => {
     if (field === "role") {
@@ -80,8 +80,8 @@ export default function AuthForm() {
 
     try {
       const res = isLogin
-        ? await loginApi(formData)
-        : await signupApi(formData);
+        ? await loginApi(formData, csrfToken)
+        : await signupApi(formData, csrfToken);
 
       const data = await res.json();
 

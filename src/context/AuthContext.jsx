@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { API_BASE } from "../config";
 const AuthContext = createContext(null);
 
@@ -7,8 +13,24 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* HYDRATE SESSION ON APP LOAD           */
+  // Helper routine to pull a token manually when anonymous actions happen
+  const refreshAnonymousCsrf = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/csrf-token`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCsrfToken(data.csrfToken || "");
+        return data.csrfToken;
+      }
+    } catch (err) {
+      console.error("Failed to secure anonymous CSRF context token:", err);
+    }
+    return "";
+  }, []);
 
+  /* HYDRATE SESSION ON APP LOAD */
   useEffect(() => {
     const hydrateAuth = async () => {
       try {
@@ -18,7 +40,8 @@ export function AuthProvider({ children }) {
 
         if (res.status === 401) {
           setUser(null);
-          setCsrfToken("");
+          // Session doesn't exist yet, grab anonymous anti-forgery token instead
+          await refreshAnonymousCsrf();
           return;
         }
 
@@ -27,20 +50,22 @@ export function AuthProvider({ children }) {
         }
 
         const data = await res.json();
-
         setUser(data.user || null);
         setCsrfToken(data.csrfToken || "");
       } catch (err) {
-        console.error("Auth hydration failed:", err);
+        console.error(
+          "Auth hydration failed, attempting anonymous token setup:",
+          err,
+        );
         setUser(null);
-        setCsrfToken("");
+        await refreshAnonymousCsrf();
       } finally {
         setLoading(false);
       }
     };
 
     hydrateAuth();
-  }, []);
+  }, [refreshAnonymousCsrf]);
 
   return (
     <AuthContext.Provider
@@ -50,14 +75,13 @@ export function AuthProvider({ children }) {
         user,
         setUser,
         loading,
+        refreshAnonymousCsrf,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 }
-
-/* CUSTOM HOOK                           */
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
